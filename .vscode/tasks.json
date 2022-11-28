@@ -11,6 +11,7 @@
                 "-L${workspaceFolder}/lib",				
                 "${workspaceFolder}/src/\\*.cpp",				
                 "${workspaceFolder}/include/glad/glad.c",
+                "${workspaceFolder}/include/stb/stb_image.c",
                 "-lglfw3dll",
                 "-o",
                 "${workspaceFolder}/myprogram.exe"
