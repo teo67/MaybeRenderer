@@ -14,7 +14,7 @@ string Shader::locationEquals(int& input) {
     return "layout (location = " + to_string(input) + ") ";
 }
 void Shader::initShader(
-    ColorOptions color, TextureOptions texture, bool transform, bool viewproj
+    ColorOptions color, TextureOptions texture, bool transform
 ) {
     if(color == ColorOptions::NONE && texture == TextureOptions::NONE) {
         cout << "error generating texture: either a color or a texture must exist!" << endl;
@@ -24,7 +24,7 @@ void Shader::initShader(
     vertexCode += "#version 330 core\n";
     int location = -1;
     vertexCode += this->locationEquals(location) + "in vec3 aPos;\n";
-    if(color == ColorOptions::VARIABLE) {
+    if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         vertexCode += this->locationEquals(location) + "in vec3 aColor;\n";
         vertexCode += "out vec3 color;\n";
     }
@@ -32,23 +32,33 @@ void Shader::initShader(
         vertexCode += this->locationEquals(location) + "in vec2 aTexture;\n";
         vertexCode += "out vec2 TexCoord;\n";
     }
-    if(transform) {
-        vertexCode += "uniform mat4 model;\n";
+    numSizes = location + 1;
+    sizes[numSizes];
+    sizes[0] = 3;
+    totalSize = 3;
+    if(numSizes == 3) {
+        sizes[1] = 3;
+        sizes[2] = 2;
+        totalSize = 8;
+    } else if(numSizes == 2) {
+        if(texture != TextureOptions::NONE) {
+            sizes[1] = 2;
+            totalSize = 5;
+        } else {
+            sizes[1] = 3;
+            totalSize = 6;
+        }
     }
-    if(viewproj) {
-        vertexCode += "uniform mat4 view;\n";
-        vertexCode += "uniform mat4 projection;\n";
+    if(transform) {
+        vertexCode += "uniform mat4 transform;\n";
     }
     vertexCode += "void main() {\n";
     vertexCode += "gl_Position = ";
-    if(viewproj) {
-        vertexCode += "projection * view * ";
-    }
     if(transform) {
-        vertexCode += "model * ";
+        vertexCode += "transform * ";
     }
     vertexCode += "vec4(aPos, 1.0);\n";
-    if(color == ColorOptions::VARIABLE) {
+    if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         vertexCode += "color = aColor;\n";
     }
     if(texture != TextureOptions::NONE) {
@@ -59,8 +69,11 @@ void Shader::initShader(
     string fragmentCode;
     fragmentCode += "#version 330 core\n";
     fragmentCode += "out vec4 FragColor;\n";
-    if(color == ColorOptions::VARIABLE) {
+    if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         fragmentCode += "in vec3 color;\n";
+        if(color == ColorOptions::VARIABLE_WITH_LIGHT) {
+            fragmentCode += "uniform vec3 light;\n";
+        }
     } else if(color == ColorOptions::UNIFORM) {
         fragmentCode += "uniform vec3 color;\n";
     }
@@ -83,38 +96,42 @@ void Shader::initShader(
     if(texture == TextureOptions::MIX) {
         fragmentCode += ", texture(texture2, TexCoord), mixPercent)";
     }
-    if(texture != TextureOptions::NONE) {
-        if(color == ColorOptions::NONE) {
-            fragmentCode += ";\n";
-        } else {
-            fragmentCode += " * ";
-        }
+    if(texture != TextureOptions::NONE && color != ColorOptions::NONE) {
+        fragmentCode += " * ";
     }
     if(color != ColorOptions::NONE) {
-        fragmentCode += "vec4(color, 1.0);\n";
+        fragmentCode += "vec4(";
+        if(color == ColorOptions::VARIABLE_WITH_LIGHT) {
+            fragmentCode += "light * "; 
+        }
+        fragmentCode += "color, 1.0)";
     }
+    fragmentCode += ";\n";
     fragmentCode += "}";
     this->initShader(vertexCode, fragmentCode);
 }
-Shader::Shader(ColorOptions color, TextureOptions texture, bool transform, bool viewproj) {
-    this->initShader(color, texture, transform, viewproj);
+Shader::Shader(ColorOptions color, TextureOptions texture, bool transform) {
+    this->initShader(color, texture, transform);
 }
-Shader::Shader(ColorOptions color, bool transform, bool viewproj) {
-    this->initShader(color, TextureOptions::NONE, transform, viewproj);
+Shader::Shader(ColorOptions color, bool transform) {
+    this->initShader(color, TextureOptions::NONE, transform);
 }
-Shader::Shader(TextureOptions texture, bool transform, bool viewproj) {
-    this->initShader(ColorOptions::NONE, texture, transform, viewproj);
+Shader::Shader(TextureOptions texture, bool transform) {
+    this->initShader(ColorOptions::NONE, texture, transform);
 }
 Shader::Shader(ColorOptions color) {
-    this->initShader(color, TextureOptions::NONE, true, true);
+    this->initShader(color, TextureOptions::NONE, true);
 }
 Shader::Shader(TextureOptions texture) {
-    this->initShader(ColorOptions::NONE, texture, true, true);
+    this->initShader(ColorOptions::NONE, texture, true);
 }
 Shader::Shader(ColorOptions color, TextureOptions texture) {
-    this->initShader(color, texture, true, true);
+    this->initShader(color, texture, true);
 }
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+    numSizes = -1;
+    sizes[0] = {};
+    totalSize = -1;
     string vertexCode;
     string fragmentCode;
     ifstream vShaderFile;
@@ -198,4 +215,13 @@ void Shader::transform(glm::mat4 trans, const char* transString) {
 void Shader::sendVec3f(float a, float b, float c, const char* vecString) {
     GLuint vecLoc = this->getLocation(vecString);
     glUniform3f(vecLoc, a, b, c);
+}
+unsigned int Shader::getNumSizes() {
+    return numSizes;
+}
+unsigned int* Shader::getSizes() {
+    return sizes;
+}
+unsigned int Shader::getTotalSize() {
+    return totalSize;
 }
