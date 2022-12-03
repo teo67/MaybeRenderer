@@ -1,15 +1,20 @@
+struct Attribute {
+    GLenum type;
+    unsigned int num;
+    unsigned int size;
+};
 class Batch {
     private:
         GLuint VAO;
         GLuint VBO;
         GLuint EBO;
-        int numIndices;
-        void initialize(unsigned int numSizes, unsigned int* sizes, unsigned int totalSize, unsigned int vertexSize, unsigned int indexSize, GLenum drawType);
+        unsigned int singleSize;
     public:
-        Batch(Shader* sampleShader, unsigned int vertexSize, unsigned int indexSize, GLenum drawType);
-        Batch(unsigned int numSizes, unsigned int* sizes, unsigned int totalSize, unsigned int vertexSize, unsigned int indexSize, GLenum drawType);
-        void editVertexBuffer(unsigned int offset, float* vertices);
-        void editIndexBuffer(unsigned int offset, unsigned int* indices);
-        void draw();
+        Batch(unsigned int numSizes, Attribute* sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic);
+        void editVertexBuffer(unsigned int offset, float* vertices, unsigned int sizeo);
+        void editIndexBuffer(unsigned int offset, unsigned int* indices, unsigned int sizeo);
+        void draw(unsigned int offset, unsigned int numIndices);
         void unbindVAO();
+        void bindVAO();
+        void end();
 };

@@ -14,11 +14,14 @@ string Shader::locationEquals(int& input) {
     return "layout (location = " + to_string(input) + ") ";
 }
 void Shader::initShader(
-    ColorOptions color, TextureOptions texture, bool transform
+    ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures
 ) {
     if(color == ColorOptions::NONE && texture == TextureOptions::NONE) {
         cout << "error generating texture: either a color or a texture must exist!" << endl;
         return;
+    }
+    if(texture == TextureOptions::NONE && numTextures > 0) {
+        cout << "error generating texture: if this shader doesn't accept textures, there cannot be any textures." << endl;
     }
     string vertexCode;
     vertexCode += "#version 330 core\n";
@@ -32,21 +35,12 @@ void Shader::initShader(
         vertexCode += this->locationEquals(location) + "in vec2 aTexture;\n";
         vertexCode += "out vec2 TexCoord;\n";
     }
-    numSizes = location + 1;
-    sizes[numSizes];
-    sizes[0] = 3;
-    totalSize = 3;
-    if(numSizes == 3) {
-        sizes[1] = 3;
-        sizes[2] = 2;
-        totalSize = 8;
-    } else if(numSizes == 2) {
-        if(texture != TextureOptions::NONE) {
-            sizes[1] = 2;
-            totalSize = 5;
-        } else {
-            sizes[1] = 3;
-            totalSize = 6;
+    if(numTextures > 0) {
+        vertexCode += this->locationEquals(location) + "in uint texIndex;\n";
+        vertexCode += "out uint TexIndex;\n";
+        if(texture == TextureOptions::MIX) {
+            vertexCode += this->locationEquals(location) + "in uint texIndex2;\n";
+            vertexCode += "out uint TexIndex2;\n";
         }
     }
     if(transform) {
@@ -64,6 +58,12 @@ void Shader::initShader(
     if(texture != TextureOptions::NONE) {
         vertexCode += "TexCoord = aTexture;\n";
     }
+    if(numTextures > 0) {
+        vertexCode += "TexIndex = texIndex;\n";
+        if(texture == TextureOptions::MIX) {
+            vertexCode += "TexIndex2 = texIndex2;\n";
+        }
+    }
     vertexCode += "}";
 
     string fragmentCode;
@@ -79,10 +79,22 @@ void Shader::initShader(
     }
     if(texture != TextureOptions::NONE) {
         fragmentCode += "in vec2 TexCoord;\n";
-        fragmentCode += "uniform sampler2D texture1;\n";
+        fragmentCode += "uniform sampler2D texture1";
+        if(numTextures > 0) {
+            fragmentCode += "[" + std::to_string(numTextures) + "]";
+        }
+        fragmentCode += ";\n";
         if(texture == TextureOptions::MIX) {
-            fragmentCode += "uniform sample2D texture2;\n";
+            if(numTextures <= 0) {
+                fragmentCode += "uniform sampler2D texture2;\n";
+            }
             fragmentCode += "uniform float mixPercent;\n";
+        }
+    }
+    if(numTextures > 0) {
+        fragmentCode += "in uint TexIndex;\n";
+        if(texture == TextureOptions::MIX) {
+            fragmentCode += "in uint TexIndex2;\n";
         }
     }
     fragmentCode += "void main() {\n";
@@ -91,10 +103,18 @@ void Shader::initShader(
         fragmentCode += "mix(";
     }
     if(texture != TextureOptions::NONE) {
-        fragmentCode += "texture(texture1, TexCoord)";
+        fragmentCode += "texture(texture1";
+        if(numTextures > 0) {
+            fragmentCode += "[TexIndex]";
+        }
+        fragmentCode == ", TexCoord)";
     }
     if(texture == TextureOptions::MIX) {
-        fragmentCode += ", texture(texture2, TexCoord), mixPercent)";
+        fragmentCode += ", texture(texture2";
+        if(numTextures > 0) {
+            fragmentCode += "[TexIndex2]";
+        }
+        fragmentCode += ", TexCoord), mixPercent)";
     }
     if(texture != TextureOptions::NONE && color != ColorOptions::NONE) {
         fragmentCode += " * ";
@@ -108,30 +128,29 @@ void Shader::initShader(
     }
     fragmentCode += ";\n";
     fragmentCode += "}";
+    // std::cout << vertexCode << std::endl;
+    // std::cout << fragmentCode << std::endl;
     this->initShader(vertexCode, fragmentCode);
 }
-Shader::Shader(ColorOptions color, TextureOptions texture, bool transform) {
-    this->initShader(color, texture, transform);
+Shader::Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures) {
+    this->initShader(color, texture, transform, numTextures);
 }
 Shader::Shader(ColorOptions color, bool transform) {
-    this->initShader(color, TextureOptions::NONE, transform);
+    this->initShader(color, TextureOptions::NONE, transform, 0);
 }
-Shader::Shader(TextureOptions texture, bool transform) {
-    this->initShader(ColorOptions::NONE, texture, transform);
+Shader::Shader(TextureOptions texture, bool transform, unsigned int numTextures) {
+    this->initShader(ColorOptions::NONE, texture, transform, numTextures);
 }
 Shader::Shader(ColorOptions color) {
-    this->initShader(color, TextureOptions::NONE, true);
+    this->initShader(color, TextureOptions::NONE, true, 0);
 }
-Shader::Shader(TextureOptions texture) {
-    this->initShader(ColorOptions::NONE, texture, true);
+Shader::Shader(TextureOptions texture, unsigned int numTextures) {
+    this->initShader(ColorOptions::NONE, texture, true, numTextures);
 }
-Shader::Shader(ColorOptions color, TextureOptions texture) {
-    this->initShader(color, texture, true);
+Shader::Shader(ColorOptions color, TextureOptions texture, unsigned int numTextures) {
+    this->initShader(color, texture, true, numTextures);
 }
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-    numSizes = -1;
-    sizes[0] = {};
-    totalSize = -1;
     string vertexCode;
     string fragmentCode;
     ifstream vShaderFile;
@@ -215,13 +234,4 @@ void Shader::transform(glm::mat4 trans, const char* transString) {
 void Shader::sendVec3f(float a, float b, float c, const char* vecString) {
     GLuint vecLoc = this->getLocation(vecString);
     glUniform3f(vecLoc, a, b, c);
-}
-unsigned int Shader::getNumSizes() {
-    return numSizes;
-}
-unsigned int* Shader::getSizes() {
-    return sizes;
-}
-unsigned int Shader::getTotalSize() {
-    return totalSize;
 }

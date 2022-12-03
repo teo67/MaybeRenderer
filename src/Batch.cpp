@@ -1,53 +1,55 @@
 #include <iostream>
+#include <string>
+#include <cstring>
 #include <glad/glad.h>
+#include <vector>
 #include "Batch.h"
-#include "Shader.h"
-void Batch::initialize(unsigned int numSizes, unsigned int* sizes, unsigned int totalSize, unsigned int vertexSize, unsigned int indexSize, GLenum drawType) {
-    this->numIndices = 0;
+Batch::Batch(unsigned int numSizes, Attribute* sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic) {
     glGenVertexArrays(1, &this->VAO);  
     glGenBuffers(1, &this->EBO);
     glGenBuffers(1, &this->VBO);
+    singleSize = 0;
+    for(int i = 0; i < numSizes; i++) {
+        singleSize += sizes[i].num * sizes[i].size;
+    }
+    unsigned int sizeOfIndexBuffer = sizeof(unsigned int) * indexSize;
+    
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexSize, (void *)(0), drawType);
+    glBufferData(GL_ARRAY_BUFFER, singleSize * vertexSize, nullptr, isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize, (void *)(0), drawType);
-    unsigned int countSize = 0;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeOfIndexBuffer, nullptr, isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+    
+    unsigned int sizeUntil = 0;
     for(int i = 0; i < numSizes; i++) {
-        glVertexAttribPointer(i, sizes[i], GL_FLOAT, GL_FALSE, totalSize * sizeof(float), (void*)countSize);
+        //std::cout << std::to_string(i) << " " << std::to_string(sizes[i].num) << " " << std::to_string(singleSize) << " " << std::to_string((intptr_t)(sizeUntil)) << std::endl;
+        glVertexAttribPointer(i, sizes[i].num, sizes[i].type, GL_FALSE, singleSize, (void*)(intptr_t)(sizeUntil));
         glEnableVertexAttribArray(i);
-        countSize += sizes[i];
+        sizeUntil += sizes[i].num * sizes[i].size;
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
-void Batch::editVertexBuffer(unsigned int offset, float* vertices) {
+void Batch::editVertexBuffer(unsigned int offset, float* vertices, unsigned int sizeo) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(vertices), vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeo, vertices);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-void Batch::editIndexBuffer(unsigned int offset, unsigned int* indices) {
+void Batch::editIndexBuffer(unsigned int offset, unsigned int* indices, unsigned int sizeo) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeof(indices), indices);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeo, indices);
 }
-Batch::Batch(Shader* sampleShader, unsigned int vertexSize, unsigned int indexSize, GLenum drawType) {
-    unsigned int numSizes = sampleShader->getNumSizes();
-    if(numSizes == -1) {
-        std::cout << "Custom shaders cannot be used as sample shaders when constructing batches!" << std::endl;
-        return;
-    }
-    initialize(numSizes, sampleShader->getSizes(), sampleShader->getTotalSize(), vertexSize, indexSize, drawType);
+void Batch::draw(unsigned int offset, unsigned int numIndices) {
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, (void*)(intptr_t)offset);
 }
-Batch::Batch(unsigned int numSizes, unsigned int* sizes, unsigned int totalSize, unsigned int vertexSize, unsigned int indexSize, GLenum drawType) {
-    initialize(numSizes, sizes, totalSize, vertexSize, indexSize, drawType);
-}
-void Batch::draw() {
+void Batch::bindVAO() {
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, this->numIndices, GL_UNSIGNED_INT, 0);
-    // don't unbind, leave for user
 }
 void Batch::unbindVAO() {
     glBindVertexArray(0);
+}
+void Batch::end() {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }
