@@ -11,34 +11,35 @@
 #include "Shader.h"
 #include "Mouse.h"
 #include "Camera.h"
-#include "Batch.h"
+#include "BatchManager.h"
+#include "shapes/RectangularPrism.h"
 using namespace std;
 
-Mouse* mouse = new Mouse();
-Camera* camera = new Camera();
+Mouse mouse;
+Camera camera;
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }  
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    mouse->handleInput(xpos, ypos);
-    camera->handleMouse(mouse);
+    mouse.handleInput(xpos, ypos);
+    camera.handleMouse(mouse);
 }
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    camera->handleScroll(xoffset, yoffset);
+    camera.handleScroll(xoffset, yoffset);
 }
 void processInput(GLFWwindow *window, float dt) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera->forward(dt);
+        camera.forward(dt);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera->backward(dt);
+        camera.backward(dt);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera->left(dt);
+        camera.left(dt);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera->right(dt);
+        camera.right(dt);
 }
 void handleErrors(GLFWwindow *window) {
     GLenum err = glGetError();
@@ -96,60 +97,13 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
     glfwSetCursorPosCallback(window, mouseCallback);  
     glfwSetScrollCallback(window, scrollCallback); 
-    Shader* containerShader = new Shader(ColorOptions::VARIABLE_NO_LIGHT);
-    float locations[] = {
-        -0.5f, -0.5f, -0.5f, 1.0f, 0.5f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.5f, 1.0f, 0.5f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.5f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.5f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f
-    };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 2, 
-        0, 2, 3, // back
-
-        0, 1, 6, 
-        0, 6, 7, // left
-
-        0, 3, 4, 
-        0, 4, 7, // bottom 
-
-        1, 2, 5, 
-        1, 5, 6, // top
-
-        2, 3, 4, 
-        2, 4, 5, // right
-
-        4, 5, 6, 
-        4, 6, 7, // front
-    }; 
+    Shader containerShader(ColorOptions::VARIABLE_NO_LIGHT);
+    BatchManager manager;
+    RectangularPrism prism(false, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    prism.r = 1.0;
+    manager.addShape(&prism);
     glEnable(GL_DEPTH_TEST); 
-    Attribute location;
-    location.num = 3;
-    location.type = GL_FLOAT;
-    location.size = sizeof(float);
-    Attribute color;
-    color.num = 3;
-    color.type = GL_FLOAT;
-    color.size = sizeof(float);
-    Attribute attributes[2] = { location, color };
-    Batch* batch = new Batch(2, attributes, 100, 100, false);
-    batch->editVertexBuffer(0, locations, sizeof(locations));
-    batch->editIndexBuffer(0, indices, sizeof(indices));
-    // GLuint lightVAO;
-    // glGenVertexArrays(1, &lightVAO);
-    // glBindVertexArray(lightVAO);
-    // // we only need to bind to the VBO, the container's VBO's data already contains the data.
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // // set the vertex attribute 
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    // glBindVertexArray(0);
+
     // GLuint texture;
     // glGenTextures(1, &texture);
     // glBindTexture(GL_TEXTURE_2D, texture);
@@ -168,6 +122,7 @@ int main() {
     //     cout << "Failed to load texture" << endl;
     // }
     // stbi_image_free(data);
+
     float timestamp = 0.0f;
     while(!glfwWindowShouldClose(window)) {
         float currentTime = (float)glfwGetTime();
@@ -178,39 +133,22 @@ int main() {
         // rendering here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 view = camera.getView();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), 800.0f / 600.0f, 0.1f, 100.0f);
+        containerShader.use();
+        containerShader.transform(projection * view, "transform");
 
-        for(int i = 0; i < 8; i++) {
-            locations[i * 6] *= 1.001;
-            locations[i * 6 + 1] *= 1.001;
-            //locations[i * 6 + 3] *= 1.001;
-        }
-        batch->editVertexBuffer(0, locations, sizeof(locations));
-        
-        glm::mat4 view = camera->getView();
-        glm::mat4 projection = glm::perspective(glm::radians(camera->getFOV()), 800.0f / 600.0f, 0.1f, 100.0f);
-        glm::mat4 mvp = projection * view;
-        containerShader->use();
-        containerShader->transform(mvp, "transform");
-        // glm::vec3 color = glm::vec3(1.0f, 0.5f, 0.31f);
-        // glm::vec3 light = glm::vec3(1.0f, 1.0f, 1.0f);
-        // glm::vec3 adjustedColor = light * color;
-        // containerShader->sendVec3f(adjustedColor.x, adjustedColor.y, adjustedColor.z, "color");
-        batch->bindVAO();
-        batch->draw(0, 36);
+        prism.setRotation(currentTime, 0.0f, 0.0f);
+        prism.translate(dt, 0.0f, 0.0f);
+        prism.r = (sin(currentTime) + 1.0f) / 2.0f;
+        prism.b = (cos(currentTime) + 1.0f) / 2.0f;
+        manager.updateAll();
+        manager.renderAll();
 
-        // glm::mat4 model2 = glm::mat4(1.0f);
-        // model2 = glm::translate(model2, lightPos);
-        // model2 = glm::scale(model2, glm::vec3(0.2f));
-        // glm::mat4 mvp2 = projection * view * model2;
-        // containerShader->transform(mvp2, "transform");
-        // containerShader->sendVec3f(1.0f, 1.0f, 1.0f, "color");
-        // glBindVertexArray(lightVAO);
-        // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        // end rendering
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    containerShader->end();
-    batch->end();
+    containerShader.end();
+    manager.cleanup();
     return 0;
 }

@@ -1,3 +1,5 @@
+#ifndef MOUSE_H
+#define MOUSE_H
 class Mouse {
     private:
         double x;
@@ -13,3 +15,4 @@ class Mouse {
         double getDy();
         void handleInput(double xpos, double ypos);
 };
+#endif

@@ -26,7 +26,7 @@ void Shader::initShader(
     string vertexCode;
     vertexCode += "#version 330 core\n";
     int location = -1;
-    vertexCode += this->locationEquals(location) + "in vec3 aPos;\n";
+    vertexCode += this->locationEquals(location) + "in vec4 aPos;\n";
     if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         vertexCode += this->locationEquals(location) + "in vec3 aColor;\n";
         vertexCode += "out vec3 color;\n";
@@ -51,7 +51,7 @@ void Shader::initShader(
     if(transform) {
         vertexCode += "transform * ";
     }
-    vertexCode += "vec4(aPos, 1.0);\n";
+    vertexCode += "aPos;\n";
     if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         vertexCode += "color = aColor;\n";
     }

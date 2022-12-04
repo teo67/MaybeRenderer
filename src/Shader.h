@@ -1,3 +1,5 @@
+#ifndef SHADER_H
+#define SHADER_H
 enum class ColorOptions { NONE, UNIFORM, VARIABLE_NO_LIGHT, VARIABLE_WITH_LIGHT };
 enum class TextureOptions { NONE, SINGLE, MIX };
 class Shader {
@@ -21,3 +23,4 @@ class Shader {
         void transform(glm::mat4 trans, const char* transString);
         void sendVec3f(float a, float b, float c, const char* vecString);
 };
+#endif

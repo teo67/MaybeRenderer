@@ -61,9 +61,9 @@ void Camera::right(float dt) {
 void Camera::left(float dt) {
     position -= speed * rightVector * dt;
 }
-void Camera::handleMouse(Mouse* mouse) {
-    float xoffset = mouse->getDx() * sensitivity;
-    float yoffset = mouse->getDy() * sensitivity;
+void Camera::handleMouse(Mouse mouse) {
+    float xoffset = mouse.getDx() * sensitivity;
+    float yoffset = mouse.getDy() * sensitivity;
     yaw += xoffset;
     pitch += yoffset;  
     if(pitch > 89.0f)
