@@ -9,8 +9,7 @@ class Shader {
         void initShader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures);
         std::string locationEquals(int& input);
     public:
-        Shader(const char* vertexPath, const char* fragmentPath);
-        Shader(std::string vShaderCode, std::string fShaderCode);
+        Shader(std::string vertexPath, std::string fragmentPath, bool alreadyRead);
         Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures);
         Shader(ColorOptions color, bool transform);
         Shader(TextureOptions texture, bool transform, unsigned int numTextures);
@@ -19,8 +18,8 @@ class Shader {
         Shader(ColorOptions color, TextureOptions texture, unsigned int numTextures);
         void end();
         void use();
-        GLuint getLocation(const char* name);
-        void transform(glm::mat4 trans, const char* transString);
-        void sendVec3f(float a, float b, float c, const char* vecString);
+        GLuint getLocation(std::string name);
+        void transform(glm::mat4 trans, std::string transString);
+        void sendVec3f(float a, float b, float c, std::string vecString);
 };
 #endif

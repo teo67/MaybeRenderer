@@ -2,51 +2,46 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shape.h"
+#include "ColorShape.h"
 #include "RectangularPrism.h"
 #include <algorithm>
 #include <iostream>
-unsigned int RectangularPrism::getNumVertices() {
-    return 8;
-}
-unsigned int RectangularPrism::getNumIndices() {
-    return 36;
-}
-void RectangularPrism::appendVertexData(float* vertexData, unsigned int index) {
-    glm::mat4 matrix = Shape::getMatrix();
-    fillMatrixData(vertexData, index, matrix, -0.5f, -0.5f, -0.5f);
-    fillMatrixData(vertexData, index + 7, matrix, -0.5f, 0.5f, -0.5f);
-    fillMatrixData(vertexData, index + 14, matrix, 0.5f, 0.5f, -0.5f);
-    fillMatrixData(vertexData, index + 21, matrix, 0.5f, -0.5f, -0.5f);
-    fillMatrixData(vertexData, index + 28, matrix, 0.5f, -0.5f, 0.5f);
-    fillMatrixData(vertexData, index + 35, matrix, 0.5f, 0.5f, 0.5f);
-    fillMatrixData(vertexData, index + 42, matrix, -0.5f, 0.5f, 0.5f);
-    fillMatrixData(vertexData, index + 49, matrix, -0.5f, -0.5f, 0.5f);
-    fillSameData(vertexData, index + 4, 7, 8, r);
-    fillSameData(vertexData, index + 5, 7, 8, g);
-    fillSameData(vertexData, index + 6, 7, 8, b);
-}
-void RectangularPrism::appendIndexData(unsigned int* indexData, unsigned int index, unsigned int firstPoint) {
-    unsigned int newData[36] = {
-        firstPoint, firstPoint + 1, firstPoint + 2, 
-        firstPoint, firstPoint + 2, firstPoint + 3, // back
+#include <vector>
 
-        firstPoint, firstPoint + 1, firstPoint + 6, 
-        firstPoint, firstPoint + 6, firstPoint + 7, // left
+std::vector<glm::vec3> rectangularPrismVertices = {
+    glm::vec3(-0.5f, -0.5f, -0.5f),
+    glm::vec3(-0.5f, 0.5f, -0.5f),
+    glm::vec3(0.5f, 0.5f, -0.5f),
+    glm::vec3(0.5f, -0.5f, -0.5f),
+    glm::vec3(0.5f, -0.5f, 0.5f),
+    glm::vec3(0.5f, 0.5f, 0.5f),
+    glm::vec3(-0.5f, 0.5f, 0.5f),
+    glm::vec3(-0.5f, -0.5f, 0.5f)
+};
+std::vector<unsigned int> rectangularPrismIndices = {
+    0, 1, 2, 
+    0, 2, 3, // back
 
-        firstPoint, firstPoint + 3, firstPoint + 4, 
-        firstPoint, firstPoint + 4, firstPoint + 7, // bottom 
+    0, 1, 6, 
+    0, 6, 7, // left
 
-        firstPoint + 1, firstPoint + 2, firstPoint + 5, 
-        firstPoint + 1, firstPoint + 5, firstPoint + 6, // top
+    0, 3, 4, 
+    0, 4, 7, // bottom 
 
-        firstPoint + 2, firstPoint + 3, firstPoint + 4, 
-        firstPoint + 2, firstPoint + 4, firstPoint + 5, // right
+    1, 2, 5, 
+    1, 5, 6, // top
 
-        firstPoint + 4, firstPoint + 5, firstPoint + 6, 
-        firstPoint + 4, firstPoint + 6, firstPoint + 7 // front
-    };
-    std::copy(&newData[0], &newData[36], &indexData[index]);
-}
-RectangularPrism::RectangularPrism(bool isStatic, float x, float y, float z, float pitch, float yaw, float roll, float xScale, float yScale, float zScale) {
-    this->init(isStatic, x, y, z, pitch, yaw, roll, xScale, yScale, zScale);
+    2, 3, 4, 
+    2, 4, 5, // right
+
+    4, 5, 6, 
+    4, 6, 7 // front
+};
+VertexIndexInfo vertexIndexInfo = VertexIndexInfo(rectangularPrismVertices, rectangularPrismIndices);
+Vec2 defaultTextureInfo[8] = {
+    Vec2(1.0f, 0.0f), Vec2(1.0f, 1.0f), Vec2(0.0f, 1.0f), Vec2(0.0f, 0.0f),
+    Vec2(1.0f, 0.0f), Vec2(1.0f, 1.0f), Vec2(0.0f, 1.0f), Vec2(0.0f, 0.0f)
+};
+ColorShape RectangularPrism::createColor(PositionInfo& positionInfo, bool isStatic) {
+    return ColorShape(positionInfo, vertexIndexInfo, isStatic);
 }

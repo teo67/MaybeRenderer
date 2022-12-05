@@ -1,8 +1,18 @@
 #include "ColorShape.h"
-void ColorShape::init(bool isStatic, float x, float y, float z, float pitch, float yaw, float roll, float xScale, float yScale, float zScale) {
-    Shape::init(isStatic, x, y, z, pitch, yaw, roll, xScale, yScale, zScale);
-    r = 0;
-    g = 0;
-    b = 0;
+#include "Shape.h"
+#include "../Debugger.h"
+#include <vector>
+ColorShape::ColorShape(PositionInfo& _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
+Shape(_positionInfo, _vertexIndexInfo, _isStatic)
+{
+    r = 0.0f;
+    g = 0.0f;
+    b = 0.0f;
 }
-ColorShape::ColorShape() {}
+
+void ColorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index) {
+    fillPositionInfo(vertexData, index, 7);
+    fillSameValue(vertexData, index + 4, 7, r);
+    fillSameValue(vertexData, index + 5, 7, g);
+    fillSameValue(vertexData, index + 6, 7, b);
+}

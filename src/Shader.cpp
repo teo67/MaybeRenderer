@@ -150,35 +150,36 @@ Shader::Shader(TextureOptions texture, unsigned int numTextures) {
 Shader::Shader(ColorOptions color, TextureOptions texture, unsigned int numTextures) {
     this->initShader(color, texture, true, numTextures);
 }
-Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-    string vertexCode;
-    string fragmentCode;
-    ifstream vShaderFile;
-    ifstream fShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-    fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-    try {
-        // open files
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        stringstream vShaderStream, fShaderStream;
-        // read file's buffer contents into streams
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();		
-        // close file handlers
-        vShaderFile.close();
-        fShaderFile.close();
-        // convert stream into string
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();		
-    } catch(ifstream::failure e) {
-        cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n" << strerror(errno) << endl;
+Shader::Shader(string vertexPath, string fragmentPath, bool alreadyRead) {
+    if(alreadyRead) {
+        this->initShader(vertexPath, fragmentPath);
+    } else {
+        string vertexCode;
+        string fragmentCode;
+        ifstream vShaderFile;
+        ifstream fShaderFile;
+        // ensure ifstream objects can throw exceptions:
+        vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
+        fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
+        try {
+            // open files
+            vShaderFile.open(vertexPath);
+            fShaderFile.open(fragmentPath);
+            stringstream vShaderStream, fShaderStream;
+            // read file's buffer contents into streams
+            vShaderStream << vShaderFile.rdbuf();
+            fShaderStream << fShaderFile.rdbuf();		
+            // close file handlers
+            vShaderFile.close();
+            fShaderFile.close();
+            // convert stream into string
+            vertexCode = vShaderStream.str();
+            fragmentCode = fShaderStream.str();		
+        } catch(ifstream::failure e) {
+            cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n" << strerror(errno) << endl;
+        }
+        this->initShader(vertexCode, fragmentCode);
     }
-    this->initShader(vertexCode, fragmentCode);
-}
-Shader::Shader(string vertexCode, string fragmentCode) {
-    this->initShader(vertexCode, fragmentCode);
 }
 void Shader::initShader(string vertexCode, string fragmentCode) {
     const char* vShaderCode = vertexCode.c_str();
@@ -224,14 +225,14 @@ void Shader::end() {
 void Shader::use() {
     glUseProgram(program);
 }
-GLuint Shader::getLocation(const char* name) {
-    return glGetUniformLocation(program, name);
+GLuint Shader::getLocation(string name) {
+    return glGetUniformLocation(program, name.c_str());
 }
-void Shader::transform(glm::mat4 trans, const char* transString) {
+void Shader::transform(glm::mat4 trans, string transString) {
     GLuint transformLoc = this->getLocation(transString);
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 }
-void Shader::sendVec3f(float a, float b, float c, const char* vecString) {
+void Shader::sendVec3f(float a, float b, float c, string vecString) {
     GLuint vecLoc = this->getLocation(vecString);
     glUniform3f(vecLoc, a, b, c);
 }

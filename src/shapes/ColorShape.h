@@ -1,13 +1,13 @@
 #ifndef COLORSHAPE_H
 #define COLORSHAPE_H
 #include "Shape.h"
-class ColorShape : public Shape { 
-    protected:
-        void init(bool isStatic, float x, float y, float z, float pitch, float yaw, float roll, float xScale, float yScale, float zScale);
+#include <vector>
+class ColorShape : public Shape {
     public:
         float r;
         float g;
         float b;
-        ColorShape();
+        ColorShape(PositionInfo& _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
+        void appendVertexData(std::vector<float>& vertexData, unsigned int index);
 };
 #endif

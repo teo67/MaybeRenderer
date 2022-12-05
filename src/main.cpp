@@ -12,7 +12,11 @@
 #include "Mouse.h"
 #include "Camera.h"
 #include "BatchManager.h"
+#include "shapes/ColorShape.h"
 #include "shapes/RectangularPrism.h"
+#include "shapes/Shape.h"
+#include <memory>
+
 using namespace std;
 
 Mouse mouse;
@@ -98,10 +102,25 @@ int main() {
     glfwSetCursorPosCallback(window, mouseCallback);  
     glfwSetScrollCallback(window, scrollCallback); 
     Shader containerShader(ColorOptions::VARIABLE_NO_LIGHT);
+    //std::cout <<"made shader" << std::endl;
     BatchManager manager;
-    RectangularPrism prism(false, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    prism.r = 1.0;
-    manager.addShape(&prism);
+    //std::cout << "made manager" << std::endl;
+    //ColorRectangularPrism prism(false, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    PositionInfo info;
+    //std::cout << "made info" << std::endl;
+    ColorShape prism = RectangularPrism::createColor(info, true);
+    prism.r = 1.0f;
+    //std::cout << "made prism" << std::endl;
+    // Shape testShape;
+    // ColorShape testColorShape;
+    // testColorShape.r = 2.0;
+    // testColorShape.g = 4.0;
+    // std::cout << sizeof(testShape) << std::endl;
+    // std::cout << sizeof(testColorShape) << std::endl;
+    //std::cout << sizeof(prism) << std::endl;
+    // std::cout << sizeof(ShapeState) << std::endl;
+    manager.addShape(std::make_shared<ColorShape>(prism));
+    //std::cout << "added prism" << std::endl;
     glEnable(GL_DEPTH_TEST); 
 
     // GLuint texture;
@@ -138,10 +157,10 @@ int main() {
         containerShader.use();
         containerShader.transform(projection * view, "transform");
 
-        prism.setRotation(currentTime, 0.0f, 0.0f);
-        prism.translate(dt, 0.0f, 0.0f);
-        prism.r = (sin(currentTime) + 1.0f) / 2.0f;
-        prism.b = (cos(currentTime) + 1.0f) / 2.0f;
+        // prism.setRotation(currentTime, 0.0f, 0.0f);
+        // //prism.translate(dt, 0.0f, 0.0f);
+        // prism.r = (sin(currentTime) + 1.0f) / 2.0f;
+        // prism.b = (cos(currentTime) + 1.0f) / 2.0f;
         manager.updateAll();
         manager.renderAll();
 
