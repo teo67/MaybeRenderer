@@ -5,11 +5,11 @@
 #include <optional>
 class BatchManager {
     private:
-        std::optional<Batch> batches[NUM_BATCHES];
+        Batch batches[NUM_BATCHES];
     public:
         BatchManager();
-        void addShape(std::shared_ptr<Shape> shape);
-        void updateStatic(std::shared_ptr<Shape> shape);
+        void addShape(Shape& shape);
+        void updateStatic(Shape& shape);
         void updateAll();
         void renderAll();
         void cleanup();

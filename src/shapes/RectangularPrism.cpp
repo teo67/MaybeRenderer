@@ -42,6 +42,12 @@ Vec2 defaultTextureInfo[8] = {
     Vec2(1.0f, 0.0f), Vec2(1.0f, 1.0f), Vec2(0.0f, 1.0f), Vec2(0.0f, 0.0f),
     Vec2(1.0f, 0.0f), Vec2(1.0f, 1.0f), Vec2(0.0f, 1.0f), Vec2(0.0f, 0.0f)
 };
-ColorShape RectangularPrism::createColor(PositionInfo& positionInfo, bool isStatic) {
+ColorShape RectangularPrism::createColor(PositionInfo positionInfo, bool isStatic) {
     return ColorShape(positionInfo, vertexIndexInfo, isStatic);
+}
+ColorShape RectangularPrism::createColor(bool isStatic) {
+    return ColorShape(vertexIndexInfo, isStatic);
+}
+ColorShape RectangularPrism::createColor() {
+    return RectangularPrism::createColor(false);
 }

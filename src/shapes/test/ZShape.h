@@ -1,18 +1,18 @@
-// #ifndef SHAPE_H
-// #define SHAPE_H
+// #ifndef ZSHAPE_H
+// #define ZSHAPE_H
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
 // #include <glm/gtc/type_ptr.hpp>
-// #include "../BatchInfo.h"
-// enum class ShapeState {
+// #include "../../BatchInfo.h"
+// enum class ZShapeState {
 //     ENABLED, DISABLED_TEMPORARY, DISABLED_PERMANENT, DISABLED_RESET
 // };
-// inline const glm::vec3 xv = glm::vec3(1.0f, 0.0f, 0.0f);
-// inline const glm::vec3 yv = glm::vec3(0.0f, 1.0f, 0.0f);
-// inline const glm::vec3 zv = glm::vec3(0.0f, 0.0f, 1.0f);
-// class Shape {
+// inline const glm::vec3 zxv = glm::vec3(1.0f, 0.0f, 0.0f);
+// inline const glm::vec3 zyv = glm::vec3(0.0f, 1.0f, 0.0f);
+// inline const glm::vec3 zzv = glm::vec3(0.0f, 0.0f, 1.0f);
+// class ZShape {
 //     private:
-//         ShapeState state;
+//         ZShapeState state;
 //         glm::vec3 position;
 //         glm::vec3 scale;
 //         bool isStatic;
@@ -33,11 +33,11 @@
 //         virtual void appendIndexData(unsigned int* indexData, unsigned int index, unsigned int firstIndex);
 //         virtual unsigned int getNumVertices();
 //         virtual unsigned int getNumIndices();
-//         ShapeState getState();
+//         ZShapeState getState();
 //         void disable(bool permanent);
 //         bool reenable();
 //         const BatchInfo getFormat();
-//         Shape();
+//         ZShape();
 //         //void setStaticState(bool isStatic, Game game);
 // };
 // #endif

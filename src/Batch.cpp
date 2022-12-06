@@ -11,33 +11,31 @@
 #include "Batch.h"
 #include "Debugger.h"
 
-Node::Node(std::shared_ptr<Shape>& _shape) {
+Node::Node(Shape& _shape) : shape(_shape) {
     //Debugger::print("creating node");
-    shape = _shape;
     next = nullptr;
     //Debugger::print("node created");
 }
-Node::Node() {
-    //Debugger::print("creating empty node");
-    shape = nullptr;
-    next = nullptr;
-    //Debugger::print("empty node created");
-}
-// inline Node::Node(const Node& other) {
-//     if(other.next != nullptr) {
-//         std::cout << "Error: implicit Node copy without nullptr" << std::endl;
-//     }
-//     next = nullptr;
-//     shape = other.shape;
-// }
-Batch::Batch(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame) 
- {
-    init(sizes, vertexSize, indexSize, isStatic, maxNewShapesPerFrame);
-}
-Batch::Batch(std::vector<unsigned int> sizes, bool isStatic) {
-    init(sizes, defaultVertexSize, defaultIndexSize, isStatic, defaultMaxNewShapesPerFrame);
+
+Batch::Batch() {
+    initialized = false;
+    isStatic = true;
+    marked = false;
+    numIndices = 0;
+    numVertices = 0;
+    VAO = 0;
+    VBO = 0;
+    EBO = 0;
+    singleSize = 0;
+    firstShape = nullptr;
+    lastShape = nullptr;
+    firstShapeTBA = nullptr;
+    lastShapeTBA = nullptr;
+    maxNewShapesPerFrame = 0;
 }
 void Batch::init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame) {
+    initialized = true;
+    this->maxNewShapesPerFrame = maxNewShapesPerFrame;
     this->isStatic = isStatic;
     this->marked = false;
     this->numIndices = 0;
@@ -73,6 +71,9 @@ void Batch::init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsig
     lastShapeTBA = nullptr;
     //Debugger::print("initialized");
 }
+void Batch::init(std::vector<unsigned int> sizes, bool isStatic) {
+    init(sizes, defaultVertexSize, defaultIndexSize, isStatic, defaultMaxNewShapesPerFrame);
+}
 void Batch::editVertexBuffer(unsigned int offset, std::vector<float>& vertices, unsigned int sizeo) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&vertices[0]));
@@ -96,7 +97,7 @@ void Batch::printVector(std::vector<float>& input) {
         std::cout << input[i] << std::endl;
     }
 }
-void Batch::addShapeToQueue(std::shared_ptr<Shape>& shape) {
+void Batch::addShapeToQueue(Shape& shape) {
     //Debugger::print("making shared");
     std::shared_ptr<Node> newNode = std::make_shared<Node>(shape);
     //Debugger::print("made shared");
@@ -117,8 +118,8 @@ void Batch::addShapeToQueue(std::shared_ptr<Shape>& shape) {
 std::shared_ptr<Node> Batch::popQueue(unsigned int &numPoppedVertices, unsigned int &numPoppedIndices) {
     //Debugger::print("popping queue");
     std::shared_ptr<Node> returning = firstShapeTBA;
-    numPoppedVertices += returning->shape->getNumVertices();
-    numPoppedIndices += returning->shape->getNumIndices();
+    numPoppedVertices += returning->shape.getNumVertices();
+    numPoppedIndices += returning->shape.getNumIndices();
     //Debugger::print("popped");
     if(returning->next == nullptr) {
         //Debugger::print("setting to null");
@@ -167,12 +168,12 @@ void Batch::update() {
         std::shared_ptr<Node> current = firstShape;
         unsigned int index = 0;
         while(true) {
-            std::shared_ptr<Shape> cshape = current->shape;
-            cshape->appendVertexData(newData, index);
-            index += cshape->getNumVertices() * singleSize;
-            if(current->next != nullptr && (current->next)->shape->getState() == ShapeState::DISABLED_PERMANENT) {
-                numRemovedVertices += current->next->shape->getNumVertices();
-                numRemovedIndices += current->next->shape->getNumIndices();
+            Shape& cshape = current->shape;
+            cshape.appendVertexData(newData, index);
+            index += cshape.getNumVertices() * singleSize;
+            if(current->next != nullptr && (current->next)->shape.getState() == ShapeState::DISABLED_PERMANENT) {
+                numRemovedVertices += current->next->shape.getNumVertices();
+                numRemovedIndices += current->next->shape.getNumIndices();
                 current->next = current->next->next; // remove any permanent disables
             }
             if(current->next == nullptr) {
@@ -193,10 +194,10 @@ void Batch::update() {
         unsigned int index = numRemovedVertices > 0 ? 0 : numIndices;
         unsigned int referenceIndex = numRemovedVertices > 0 ? 0 : numVertices - numRemovedVertices;
         while(true) {
-            std::shared_ptr<Shape> cshape = current->shape;
-            cshape->appendIndexData(newIndexData, index, referenceIndex);
-            index += cshape->getNumIndices();
-            referenceIndex += cshape->getNumVertices();
+            Shape& cshape = current->shape;
+            cshape.appendIndexData(newIndexData, index, referenceIndex);
+            index += cshape.getNumIndices();
+            referenceIndex += cshape.getNumVertices();
             if(current->next == nullptr) {
                 break;
             }

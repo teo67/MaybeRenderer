@@ -4,9 +4,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <vector>
-PositionInfo::PositionInfo(float x, float y, float z, float pitch, float yaw, float roll, float xScale, float yScale, float zScale) {
-    position = glm::vec3(x, y, z);
-    scale = glm::vec3(xScale, yScale, zScale);
+PositionInfo::PositionInfo(float _x, float _y, float _z, float pitch, float yaw, float roll, float _xScale, float _yScale, float _zScale) {
+    x = _x;
+    y = _y;
+    z = _z;
+    scaleX = _xScale;
+    scaleY = _yScale;
+    scaleZ = _zScale;
     this->pitch = pitch;
     this->yaw = yaw;
     this->roll = roll;
@@ -14,26 +18,43 @@ PositionInfo::PositionInfo(float x, float y, float z, float pitch, float yaw, fl
 PositionInfo::PositionInfo(float x, float y, float z) : PositionInfo(x, y, z, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f) {}
 PositionInfo::PositionInfo() : PositionInfo(0.0f, 0.0f, 0.0f) {}
 VertexIndexInfo::VertexIndexInfo(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices)
-: vertices(_vertices), indices(_indices) {}
+: vertices(_vertices), indices(_indices) {
+}
 Vec2::Vec2(float x, float y) {
     this->x = x;
     this->y = y;
 }
-Shape::Shape(PositionInfo& _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
-    positionInfo(_positionInfo),
+Shape::Shape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
     vertexIndexInfo(_vertexIndexInfo),
     isStatic(_isStatic),
-    state(ShapeState::ENABLED) {}
+    transform(_positionInfo),
+    state(ShapeState::ENABLED) {
+    }
 
 glm::mat4 Shape::getMatrix() {
-    glm::mat4 matrix = glm::translate(glm::mat4(1.0), positionInfo.position);
-    matrix = glm::scale(matrix, positionInfo.scale);
-    matrix = glm::rotate(matrix, positionInfo.pitch, xv);
-    matrix = glm::rotate(matrix, positionInfo.yaw, yv);
-    matrix = glm::rotate(matrix, positionInfo.roll, zv);
+    glm::mat4 matrix = glm::translate(glm::mat4(1.0), glm::vec3(transform.x, transform.y, transform.z));
+    matrix = glm::rotate(matrix, glm::radians(transform.pitch), xv);
+    matrix = glm::rotate(matrix, glm::radians(transform.yaw), yv);
+    matrix = glm::rotate(matrix, glm::radians(transform.roll), zv);
+    matrix = glm::scale(matrix, glm::vec3(transform.scaleX, transform.scaleY, transform.scaleZ));
     return matrix;
 }
 
+void Shape::setPosition(float x, float y, float z) {
+    transform.x = x;
+    transform.y = y;
+    transform.z = z;
+}
+void Shape::setRotation(float pitch, float yaw, float roll) {
+    transform.pitch = pitch;
+    transform.yaw = yaw;
+    transform.roll = roll;
+}
+void Shape::setScale(float x, float y, float z) {
+    transform.scaleX = x;
+    transform.scaleY = y;
+    transform.scaleZ = z;
+}
 void Shape::fillSameValue(std::vector<float>& data, unsigned int offset, unsigned int stride, float value) {
     for(int i = 0; i < vertexIndexInfo.vertices.size(); i++) {
         data[offset + i * stride] = value;

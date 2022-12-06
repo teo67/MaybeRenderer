@@ -4,10 +4,9 @@
 #include <glad/glad.h>
 #include <memory>
 struct Node {
-    std::shared_ptr<Shape> shape;
+    Shape& shape;
     std::shared_ptr<Node> next;
-    Node(std::shared_ptr<Shape>& _shape);
-    Node();
+    Node(Shape& _shape);
 };
 inline const unsigned int defaultVertexSize = 1000;
 inline const unsigned int defaultIndexSize = 1000;
@@ -30,15 +29,16 @@ class Batch {
         void editIndexBuffer(unsigned int offset, unsigned int* indices, unsigned int sizeo);
         std::shared_ptr<Node> popQueue(unsigned int &numPoppedVertices, unsigned int &numPoppedIndices);
         unsigned int maxNewShapesPerFrame;
-        void init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame);
         void printVector(std::vector<float>& input);
     public:
-        Batch(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame);
-        Batch(std::vector<unsigned int>, bool isStatic);
+        void init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame);
+        void init(std::vector<unsigned int> sizes, bool isStatic);
+        Batch(); //creates batch w/o initializing
         void draw();
         void update();
-        void addShapeToQueue(std::shared_ptr<Shape>& shape);
+        void addShapeToQueue(Shape& shape);
         void end();
         bool marked;
+        bool initialized;
 };
 #endif

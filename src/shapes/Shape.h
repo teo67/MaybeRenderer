@@ -12,8 +12,12 @@ inline const glm::vec3 xv = glm::vec3(1.0f, 0.0f, 0.0f);
 inline const glm::vec3 yv = glm::vec3(0.0f, 1.0f, 0.0f);
 inline const glm::vec3 zv = glm::vec3(0.0f, 0.0f, 1.0f);
 struct PositionInfo {
-    glm::vec3 position;
-    glm::vec3 scale;
+    float x;
+    float y;
+    float z;
+    float scaleX;
+    float scaleY;
+    float scaleZ;
     float pitch;
     float yaw;
     float roll;
@@ -33,17 +37,19 @@ struct VertexIndexInfo {
 };
 class Shape {
     private:
-        PositionInfo& positionInfo;
-        //Vec2* textureCoordinateInfo;
-        VertexIndexInfo& vertexIndexInfo;
         ShapeState state;
         bool isStatic;
-        glm::mat4 getMatrix();
+        VertexIndexInfo& vertexIndexInfo;
     protected:
         void fillPositionInfo(std::vector<float>& data, unsigned int offset, unsigned int stride);
         void fillSameValue(std::vector<float>& data, unsigned int offset, unsigned int stride, float value);
+        glm::mat4 getMatrix();
     public:
-        Shape(PositionInfo& _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
+        PositionInfo transform;
+        void setPosition(float x, float y, float z);
+        void setRotation(float pitch, float yaw, float roll);
+        void setScale(float x, float y, float z);
+        Shape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         virtual void appendVertexData(std::vector<float>& vertexData, unsigned int index);
         void appendIndexData(unsigned int* indexData, unsigned int index, unsigned int firstIndex);
         unsigned int getNumVertices();
@@ -52,5 +58,6 @@ class Shape {
         void disable(bool permanent);
         bool reenable();
         virtual const BatchInfo& getFormat();
+        
 };
 #endif

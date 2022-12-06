@@ -15,6 +15,9 @@
 #include "shapes/ColorShape.h"
 #include "shapes/RectangularPrism.h"
 #include "shapes/Shape.h"
+// #include "shapes/test/ZRectangularPrism.h"
+// #include "shapes/test/ZShape.h"
+// #include "shapes/test/ZColorShape.h"
 #include <memory>
 
 using namespace std;
@@ -106,10 +109,11 @@ int main() {
     BatchManager manager;
     //std::cout << "made manager" << std::endl;
     //ColorRectangularPrism prism(false, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    PositionInfo info;
     //std::cout << "made info" << std::endl;
-    ColorShape prism = RectangularPrism::createColor(info, true);
-    prism.r = 1.0f;
+    ColorShape prism = RectangularPrism::createColor();
+    std::cout << sizeof(prism) << std::endl;
+    ColorShape secondPrism = RectangularPrism::createColor();
+    secondPrism.transform.y = 1.0f;
     //std::cout << "made prism" << std::endl;
     // Shape testShape;
     // ColorShape testColorShape;
@@ -119,7 +123,8 @@ int main() {
     // std::cout << sizeof(testColorShape) << std::endl;
     //std::cout << sizeof(prism) << std::endl;
     // std::cout << sizeof(ShapeState) << std::endl;
-    manager.addShape(std::make_shared<ColorShape>(prism));
+    manager.addShape(prism);
+    manager.addShape(secondPrism);
     //std::cout << "added prism" << std::endl;
     glEnable(GL_DEPTH_TEST); 
 
@@ -157,10 +162,18 @@ int main() {
         containerShader.use();
         containerShader.transform(projection * view, "transform");
 
-        // prism.setRotation(currentTime, 0.0f, 0.0f);
+        prism.transform.yaw = currentTime * 5;
+        //prism.transform.x = 5.0f * sin(glm::radians(currentTime));
+        //prism.transform.z = 5.0f * cos(glm::radians(currentTime));
         // //prism.translate(dt, 0.0f, 0.0f);
-        // prism.r = (sin(currentTime) + 1.0f) / 2.0f;
-        // prism.b = (cos(currentTime) + 1.0f) / 2.0f;
+        prism.color.r = (sin(currentTime) + 1.0f) / 2.0f;
+        prism.color.b = (cos(currentTime) + 1.0f) / 2.0f;
+        secondPrism.transform.yaw = 90.0f + currentTime * 5;
+        //secondPrism.transform.x = 5.0f * sin(glm::radians(currentTime));
+        //secondPrism.transform.z = 5.0f * sin(glm::radians(currentTime));
+        // //prism.translate(dt, 0.0f, 0.0f);
+        secondPrism.color.g = (sin(currentTime) + 1.0f) / 2.0f;
+        secondPrism.color.b = (sin(currentTime) + 1.0f) / 2.0f;
         manager.updateAll();
         manager.renderAll();
 
