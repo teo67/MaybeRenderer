@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include "../BatchInfo.h"
+#include <memory>
 enum class ShapeState : unsigned char {
     ENABLED, DISABLED_TEMPORARY, DISABLED_PERMANENT, DISABLED_RESET
 };
@@ -35,6 +36,7 @@ struct VertexIndexInfo {
     std::vector<unsigned int>& indices;
     VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
 };
+
 class Shape {
     private:
         ShapeState state;
@@ -58,6 +60,12 @@ class Shape {
         void disable(bool permanent);
         bool reenable();
         virtual const BatchInfo& getFormat();
-        
 };
+class Node1 {
+    public:
+        std::shared_ptr<Node1> next;
+        Node1();
+        virtual Shape& getShape();
+};
+
 #endif

@@ -11,12 +11,6 @@
 #include "Batch.h"
 #include "Debugger.h"
 
-Node::Node(Shape& _shape) : shape(_shape) {
-    //Debugger::print("creating node");
-    next = nullptr;
-    //Debugger::print("node created");
-}
-
 Batch::Batch() {
     initialized = false;
     isStatic = true;
@@ -76,11 +70,13 @@ void Batch::init(std::vector<unsigned int> sizes, bool isStatic) {
 }
 void Batch::editVertexBuffer(unsigned int offset, std::vector<float>& vertices, unsigned int sizeo) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //Debugger::print(std::to_string(vertices.size()));
     glBufferSubData(GL_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&vertices[0]));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 void Batch::editIndexBuffer(unsigned int offset, unsigned int* indices, unsigned int sizeo) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //Debugger::print(std::to_string(sizeof(indices)));
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeo, indices);
 }
 void Batch::draw() {
@@ -97,9 +93,7 @@ void Batch::printVector(std::vector<float>& input) {
         std::cout << input[i] << std::endl;
     }
 }
-void Batch::addShapeToQueue(Shape& shape) {
-    //Debugger::print("making shared");
-    std::shared_ptr<Node> newNode = std::make_shared<Node>(shape);
+void Batch::addShapeToQueue(const std::shared_ptr<Node1>& newNode) {
     //Debugger::print("made shared");
     if(firstShapeTBA == nullptr) {
         //Debugger::print("Assign 1");
@@ -113,13 +107,12 @@ void Batch::addShapeToQueue(Shape& shape) {
     }
     //Debugger::print("Assign 3");
     lastShapeTBA = newNode;
-    //Debugger::print("Assign 3 complete");
 }
-std::shared_ptr<Node> Batch::popQueue(unsigned int &numPoppedVertices, unsigned int &numPoppedIndices) {
-    //Debugger::print("popping queue");
-    std::shared_ptr<Node> returning = firstShapeTBA;
-    numPoppedVertices += returning->shape.getNumVertices();
-    numPoppedIndices += returning->shape.getNumIndices();
+std::shared_ptr<Node1> Batch::popQueue(unsigned int &numPoppedVertices, unsigned int &numPoppedIndices) {
+    std::shared_ptr<Node1> returning = firstShapeTBA;
+    //std::cout << returning->getShape().getNumVertices() << std::endl;
+    numPoppedVertices += returning->getShape().getNumVertices();
+    numPoppedIndices += returning->getShape().getNumIndices();
     //Debugger::print("popped");
     if(returning->next == nullptr) {
         //Debugger::print("setting to null");
@@ -131,16 +124,15 @@ std::shared_ptr<Node> Batch::popQueue(unsigned int &numPoppedVertices, unsigned 
         firstShapeTBA = returning->next;
         //Debugger::print("Assign 4 complete");
     }
-    ////Debugger::print("popped");
     return returning;
 }
 void Batch::update() {
-    std::shared_ptr<Node> firstPopped;
+    std::shared_ptr<Node1> firstPopped;
     unsigned int totalPoppedVertices = 0;
     unsigned int totalPoppedIndices = 0;
     if(firstShapeTBA != nullptr) {
         unsigned int poppedCount = 1;
-        std::shared_ptr<Node> last = popQueue(totalPoppedVertices, totalPoppedIndices);
+        std::shared_ptr<Node1> last = popQueue(totalPoppedVertices, totalPoppedIndices);
         //Debugger::print("5");
         firstPopped = last;
         //Debugger::print("5 complete");
@@ -165,15 +157,15 @@ void Batch::update() {
     //Debugger::print("made it past popping");
     if(marked || totalPoppedVertices > 0 || !isStatic) {
         std::vector<float> newData((numVertices + totalPoppedVertices) * singleSize); //new float[(numVertices + totalPoppedVertices) * singleSize]; // max possible len
-        std::shared_ptr<Node> current = firstShape;
+        std::shared_ptr<Node1> current = firstShape;
         unsigned int index = 0;
         while(true) {
-            Shape& cshape = current->shape;
+            Shape& cshape = current->getShape();
             cshape.appendVertexData(newData, index);
             index += cshape.getNumVertices() * singleSize;
-            if(current->next != nullptr && (current->next)->shape.getState() == ShapeState::DISABLED_PERMANENT) {
-                numRemovedVertices += current->next->shape.getNumVertices();
-                numRemovedIndices += current->next->shape.getNumIndices();
+            if(current->next != nullptr && (current->next)->getShape().getState() == ShapeState::DISABLED_PERMANENT) {
+                numRemovedVertices += current->next->getShape().getNumVertices();
+                numRemovedIndices += current->next->getShape().getNumIndices();
                 current->next = current->next->next; // remove any permanent disables
             }
             if(current->next == nullptr) {
@@ -190,11 +182,11 @@ void Batch::update() {
         // std::cout << "total popped indices: " << totalPoppedIndices << std::endl;
         // std::cout << "removed indices: " << numRemovedIndices << std::endl;
         unsigned int* newIndexData = new unsigned int[numIndices + totalPoppedIndices - numRemovedIndices];
-        std::shared_ptr<Node> current = numRemovedVertices > 0 ? firstShape : firstPopped;
+        std::shared_ptr<Node1> current = numRemovedVertices > 0 ? firstShape : firstPopped;
         unsigned int index = numRemovedVertices > 0 ? 0 : numIndices;
         unsigned int referenceIndex = numRemovedVertices > 0 ? 0 : numVertices - numRemovedVertices;
         while(true) {
-            Shape& cshape = current->shape;
+            Shape& cshape = current->getShape();
             cshape.appendIndexData(newIndexData, index, referenceIndex);
             index += cshape.getNumIndices();
             referenceIndex += cshape.getNumVertices();

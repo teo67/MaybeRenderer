@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <vector>
+#include <memory>
 PositionInfo::PositionInfo(float _x, float _y, float _z, float pitch, float yaw, float roll, float _xScale, float _yScale, float _zScale) {
     x = _x;
     y = _y;
@@ -30,6 +31,7 @@ Shape::Shape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool
     transform(_positionInfo),
     state(ShapeState::ENABLED) {
     }
+
 
 glm::mat4 Shape::getMatrix() {
     glm::mat4 matrix = glm::translate(glm::mat4(1.0), glm::vec3(transform.x, transform.y, transform.z));
@@ -106,4 +108,13 @@ void Shape::disable(bool permanent) {
 
 const BatchInfo& Shape::getFormat() {
     return isStatic ? STATIC_COLOR : DYNAMIC_COLOR;
+}
+
+Node1::Node1() {
+    next = nullptr;
+}
+
+Shape& Node1::getShape() {
+    std::cout << "Getting shape of default node!" << std::endl;
+    throw;
 }

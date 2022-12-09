@@ -8,7 +8,7 @@ class BatchManager {
         Batch batches[NUM_BATCHES];
     public:
         BatchManager();
-        void addShape(Shape& shape);
+        void addShape(const std::shared_ptr<Node1>& shape);
         void updateStatic(Shape& shape);
         void updateAll();
         void renderAll();

@@ -106,26 +106,22 @@ int main() {
     glfwSetScrollCallback(window, scrollCallback); 
     Shader containerShader(ColorOptions::VARIABLE_NO_LIGHT);
     //std::cout <<"made shader" << std::endl;
+    
+    
+
+
+
+
     BatchManager manager;
-    //std::cout << "made manager" << std::endl;
-    //ColorRectangularPrism prism(false, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    //std::cout << "made info" << std::endl;
-    ColorShape prism = RectangularPrism::createColor();
-    std::cout << sizeof(prism) << std::endl;
-    ColorShape secondPrism = RectangularPrism::createColor();
-    secondPrism.transform.y = 1.0f;
-    //std::cout << "made prism" << std::endl;
-    // Shape testShape;
-    // ColorShape testColorShape;
-    // testColorShape.r = 2.0;
-    // testColorShape.g = 4.0;
-    // std::cout << sizeof(testShape) << std::endl;
-    // std::cout << sizeof(testColorShape) << std::endl;
-    //std::cout << sizeof(prism) << std::endl;
-    // std::cout << sizeof(ShapeState) << std::endl;
-    manager.addShape(prism);
-    manager.addShape(secondPrism);
-    //std::cout << "added prism" << std::endl;
+
+    ColorShape& shape1 = RectangularPrism::createColor(manager);
+
+
+
+
+
+
+
     glEnable(GL_DEPTH_TEST); 
 
     // GLuint texture;
@@ -162,18 +158,9 @@ int main() {
         containerShader.use();
         containerShader.transform(projection * view, "transform");
 
-        prism.transform.yaw = currentTime * 5;
-        //prism.transform.x = 5.0f * sin(glm::radians(currentTime));
-        //prism.transform.z = 5.0f * cos(glm::radians(currentTime));
-        // //prism.translate(dt, 0.0f, 0.0f);
-        prism.color.r = (sin(currentTime) + 1.0f) / 2.0f;
-        prism.color.b = (cos(currentTime) + 1.0f) / 2.0f;
-        secondPrism.transform.yaw = 90.0f + currentTime * 5;
-        //secondPrism.transform.x = 5.0f * sin(glm::radians(currentTime));
-        //secondPrism.transform.z = 5.0f * sin(glm::radians(currentTime));
-        // //prism.translate(dt, 0.0f, 0.0f);
-        secondPrism.color.g = (sin(currentTime) + 1.0f) / 2.0f;
-        secondPrism.color.b = (sin(currentTime) + 1.0f) / 2.0f;
+        shape1.transform.yaw = currentTime * 20.0f;
+        shape1.color.r = (sin(currentTime) + 1.0f) / 2.0f;
+        shape1.color.b = (cos(currentTime) + 1.0f) / 2.0f;
         manager.updateAll();
         manager.renderAll();
 

@@ -1,5 +1,6 @@
 #include <vector>
 #include "shapes/Shape.h"
+#include "shapes/ColorShape.h"
 #include "BatchManager.h"
 #include "BatchInfo.h"
 #include <iostream>
@@ -11,12 +12,14 @@ BatchManager::BatchManager() {
         batches[i] = Batch();
     }
 }
-void BatchManager::addShape(Shape& shape) {
-    const BatchInfo format = shape.getFormat();
+void BatchManager::addShape(const std::shared_ptr<Node1>& _shape) {
+    //std::cout << _shape->getShape().getNumVertices() << std::endl;
+    const BatchInfo format = _shape->getShape().getFormat();
+    std::cout << format.index << std::endl;
     if(!batches[format.index].initialized) {
         batches[format.index].init(format.sizes, format.isStatic);
     }
-    batches[format.index].addShapeToQueue(shape);
+    batches[format.index].addShapeToQueue(_shape);
 }
 void BatchManager::updateAll() {
     for(int i = 0; i < NUM_BATCHES; i++) {
