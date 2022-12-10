@@ -25,7 +25,7 @@ Vec2::Vec2(float x, float y) {
     this->x = x;
     this->y = y;
 }
-Shape::Shape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
+Shape::Shape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
     vertexIndexInfo(_vertexIndexInfo),
     isStatic(_isStatic),
     transform(_positionInfo),

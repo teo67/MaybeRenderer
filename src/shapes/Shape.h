@@ -32,8 +32,8 @@ struct Vec2 {
     Vec2(float x, float y);
 };
 struct VertexIndexInfo {
-    std::vector<glm::vec3>& vertices;
-    std::vector<unsigned int>& indices;
+    std::vector<glm::vec3> vertices;
+    std::vector<unsigned int> indices;
     VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
 };
 
@@ -41,7 +41,7 @@ class Shape {
     private:
         ShapeState state;
         bool isStatic;
-        VertexIndexInfo& vertexIndexInfo;
+        const VertexIndexInfo& vertexIndexInfo;
     protected:
         void fillPositionInfo(std::vector<float>& data, unsigned int offset, unsigned int stride);
         void fillSameValue(std::vector<float>& data, unsigned int offset, unsigned int stride, float value);
@@ -51,7 +51,7 @@ class Shape {
         void setPosition(float x, float y, float z);
         void setRotation(float pitch, float yaw, float roll);
         void setScale(float x, float y, float z);
-        Shape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
+        Shape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         virtual void appendVertexData(std::vector<float>& vertexData, unsigned int index);
         void appendIndexData(unsigned int* indexData, unsigned int index, unsigned int firstIndex);
         unsigned int getNumVertices();

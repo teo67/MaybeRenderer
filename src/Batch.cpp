@@ -87,6 +87,10 @@ void Batch::end() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
+    firstShape = nullptr;
+    lastShape = nullptr;
+    firstShapeTBA = nullptr;
+    lastShapeTBA = nullptr;
 }
 void Batch::printVector(std::vector<float>& input) {
     for(int i = 0; i < input.size(); i++) {

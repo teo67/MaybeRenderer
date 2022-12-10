@@ -13,12 +13,13 @@
 #include "Camera.h"
 #include "BatchManager.h"
 #include "shapes/ColorShape.h"
-#include "shapes/RectangularPrism.h"
+#include "shapes/MulticolorShape.h"
 #include "shapes/Shape.h"
 // #include "shapes/test/ZRectangularPrism.h"
 // #include "shapes/test/ZShape.h"
 // #include "shapes/test/ZColorShape.h"
 #include <memory>
+#include "Game.h"
 
 using namespace std;
 
@@ -112,12 +113,14 @@ int main() {
 
 
 
-    BatchManager manager;
+    Game game;
 
-    ColorShape& shape1 = RectangularPrism::createColor(manager);
-
-
-
+    MulticolorShape& shape1 = game.generateMulticolorShape(game.shaman.prism(6), false);
+    Color& topColor = shape1.getColor(4);
+    Color& aColor = shape1.getColor(0);
+    Color& bColor = shape1.getColor(1);
+    Color& cColor = shape1.getColor(2);
+    Color& dColor = shape1.getColor(3);
 
 
 
@@ -151,7 +154,7 @@ int main() {
         timestamp = currentTime;
         handleErrors(window);
         // rendering here
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 view = camera.getView();
         glm::mat4 projection = glm::perspective(glm::radians(camera.getFOV()), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -159,15 +162,26 @@ int main() {
         containerShader.transform(projection * view, "transform");
 
         shape1.transform.yaw = currentTime * 20.0f;
-        shape1.color.r = (sin(currentTime) + 1.0f) / 2.0f;
-        shape1.color.b = (cos(currentTime) + 1.0f) / 2.0f;
-        manager.updateAll();
-        manager.renderAll();
+        topColor.r = (sin(currentTime) + 1.0f) / 2.0f;
+        //topColor.b = (cos(currentTime) + 1.0f) / 2.0f;
+
+        aColor.g = (cos(currentTime) + 1.0f) / 2.0f;
+        aColor.b = (cos(currentTime) + 1.0f) / 2.0f;
+
+        bColor.g = (cos(currentTime) + 1.0f) / 2.0f;
+        bColor.b = (sin(currentTime) + 1.0f) / 2.0f;
+
+        cColor.g = (sin(currentTime) + 1.0f) / 2.0f;
+        cColor.b = (sin(currentTime) + 1.0f) / 2.0f;
+
+        dColor.g = (sin(currentTime) + 1.0f) / 2.0f;
+        dColor.b = (cos(currentTime) + 1.0f) / 2.0f;
+        //manager.updateAll();
+        game.render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     containerShader.end();
-    manager.cleanup();
     return 0;
 }

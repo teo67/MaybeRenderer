@@ -4,13 +4,13 @@
 #include "../BatchInfo.h"
 #include <vector>
 #include <memory>
-ColorShape::ColorShape(PositionInfo _positionInfo, VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
+ColorShape::ColorShape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
 Shape(_positionInfo, _vertexIndexInfo, _isStatic), color(Color())
 {
     
 }
 
-ColorShape::ColorShape(VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
+ColorShape::ColorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
 ColorShape(PositionInfo(), _vertexIndexInfo, _isStatic){}
 
 void ColorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index) {

@@ -15,7 +15,7 @@ BatchManager::BatchManager() {
 void BatchManager::addShape(const std::shared_ptr<Node1>& _shape) {
     //std::cout << _shape->getShape().getNumVertices() << std::endl;
     const BatchInfo format = _shape->getShape().getFormat();
-    std::cout << format.index << std::endl;
+    //std::cout << format.index << std::endl;
     if(!batches[format.index].initialized) {
         batches[format.index].init(format.sizes, format.isStatic);
     }
