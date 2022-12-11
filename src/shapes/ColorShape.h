@@ -13,7 +13,7 @@ class ColorShape : public Shape {
         Color color;
         ColorShape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         ColorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
-        void appendVertexData(std::vector<float>& vertexData, unsigned int index);
+        void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
         void setColor(float r, float g, float b);
 };
 class ColorNode : public Node1 {

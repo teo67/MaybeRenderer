@@ -10,7 +10,7 @@ class MulticolorShape : public Shape {
     public:
         MulticolorShape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         MulticolorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
-        void appendVertexData(std::vector<float>& vertexData, unsigned int index);
+        void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
         void setColor(unsigned int vertexNumber, float r, float g, float b);
         Color& getColor(unsigned int vertexNumber);
 };

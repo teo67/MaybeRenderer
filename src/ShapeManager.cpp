@@ -17,12 +17,13 @@ ShapeManager::ShapeManager(float radius) {
 
 ShapeManager::ShapeManager() : ShapeManager(defaultRadius) {}
 
-void ShapeManager::generateRegularPolygon(unsigned int numSides, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
+void ShapeManager::generateRegularPolygon(unsigned int numSides, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoords) {
     for(unsigned int i = 0; i < numSides; i++) {
         float theta = 360 * i / numSides;
-        float xcomp = radius * sinf(glm::radians(theta));
-        float zcomp = radius * cosf(glm::radians(theta));
-        vertices[i] = glm::vec3(xcomp, 0.0f, zcomp);
+        float xcomp = sinf(glm::radians(theta));
+        float zcomp = cosf(glm::radians(theta));
+        vertices[i] = glm::vec3(radius * xcomp, 0.0f, radius * zcomp);
+        texCoords[i] = glm::vec2((xcomp + 1) / 2, (zcomp + 1) / 2);
     }
     unsigned int index = 0;
     for(unsigned int multiplier = 1; multiplier * 2 < numSides; multiplier *= 2) { // add all base plate triangles
@@ -42,19 +43,22 @@ void ShapeManager::generateRegularPolygon(unsigned int numSides, std::vector<glm
 const VertexIndexInfo& ShapeManager::createRegularPolygon(unsigned int numSides) {
     std::vector<glm::vec3> vertices(numSides);
     std::vector<unsigned int> indices(3 * numSides - 6);
-    generateRegularPolygon(numSides, vertices, indices);
-    return polygons.insert({ numSides, VertexIndexInfo(vertices, indices )}).first->second;
+    std::vector<glm::vec2> coords(numSides);
+    generateRegularPolygon(numSides, vertices, indices, coords);
+    return polygons.insert({ numSides, VertexIndexInfo(vertices, indices, coords )}).first->second;
 }
 
 const VertexIndexInfo& ShapeManager::createPrism(unsigned int numSides) {
     std::vector<glm::vec3> vertices(numSides * 2);
+    std::vector<glm::vec2> coords(numSides * 2);
     std::vector<unsigned int> indices(12 * numSides - 12);
-    generateRegularPolygon(numSides, vertices, indices);
+    generateRegularPolygon(numSides, vertices, indices, coords);
     float height = sqrt(2.0f) * radius; // so that rectangular prisms are cubes by default
     unsigned int index = 3 * numSides - 6;
     for(int i = 0; i < numSides; i++) {
         vertices[numSides + i] = vertices[i];
         vertices[numSides + i].y = height;
+        coords[numSides + 1] = coords[i];
         indices[index] = i; // add side plates, two triangles at a time
         indices[index + 1] = (i == numSides - 1) ? 0 : (i + 1);
         indices[index + 2] = i + numSides;
@@ -67,15 +71,17 @@ const VertexIndexInfo& ShapeManager::createPrism(unsigned int numSides) {
         indices[index] = indices[i] + numSides;
         index++;
     }
-    return prisms.insert({ numSides, VertexIndexInfo(vertices, indices )}).first->second;
+    return prisms.insert({ numSides, VertexIndexInfo(vertices, indices, coords )}).first->second;
 }
 
 const VertexIndexInfo& ShapeManager::createPyramid(unsigned int numSides) {
     std::vector<glm::vec3> vertices(numSides + 1);
+    std::vector<glm::vec2> coords(numSides + 1);
     std::vector<unsigned int> indices(6 * numSides - 6);
-    generateRegularPolygon(numSides, vertices, indices);
+    generateRegularPolygon(numSides, vertices, indices, coords);
     float height = sqrt(2.0f) * radius; // so that triangular pyramids are regular by default
     vertices[numSides] = glm::vec3(0.0f, height, 0.0f);
+    coords[numSides] = glm::vec2(0.0f, 0.0f);
     unsigned int index = 3 * numSides - 6;
     for(int i = 0; i < numSides; i++) {
         indices[index] = i;
@@ -83,8 +89,7 @@ const VertexIndexInfo& ShapeManager::createPyramid(unsigned int numSides) {
         indices[index + 2] = numSides;
         index += 3;
     }
-    const VertexIndexInfo& returning = pyramids.insert({ numSides, VertexIndexInfo(vertices, indices )}).first->second;
-    return returning;
+    return pyramids.insert({ numSides, VertexIndexInfo(vertices, indices, coords )}).first->second;
 }
 
 std::map<unsigned int, VertexIndexInfo>::const_iterator ShapeManager::findItemInMap(std::map<unsigned int, VertexIndexInfo>& map, unsigned int index, bool& worked) {
@@ -99,9 +104,7 @@ const VertexIndexInfo& ShapeManager::prism(unsigned int numSides) {
     if(!worked) {
         return createPrism(numSides);
     }
-    const VertexIndexInfo& res = found->second;
-    printVI(res);
-    return res;
+    return found->second;
 }
 
 const VertexIndexInfo& ShapeManager::polygon(unsigned int numSides) {
@@ -110,9 +113,7 @@ const VertexIndexInfo& ShapeManager::polygon(unsigned int numSides) {
     if(!worked) {
         return createRegularPolygon(numSides);
     }
-    const VertexIndexInfo& res = found->second;
-    printVI(res);
-    return res;
+    return found->second;
 }
 
 const VertexIndexInfo& ShapeManager::pyramid(unsigned int numSides) {
@@ -121,9 +122,7 @@ const VertexIndexInfo& ShapeManager::pyramid(unsigned int numSides) {
     if(!worked) {
         return createPyramid(numSides);
     }
-    const VertexIndexInfo& res = found->second;
-    printVI(res);
-    return res;
+    return found->second;
 }
 
 void ShapeManager::printVI(const VertexIndexInfo& info) {

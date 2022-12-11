@@ -20,7 +20,7 @@ class ShapeManager {
         const VertexIndexInfo& createPrism(unsigned int numSides);
         const VertexIndexInfo& createPyramid(unsigned int numSides);
         std::map<unsigned int, VertexIndexInfo>::const_iterator findItemInMap(std::map<unsigned int, VertexIndexInfo>& map, unsigned int item, bool& worked);
-        void generateRegularPolygon(unsigned int numSides, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
+        void generateRegularPolygon(unsigned int numSides, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoords);
         void printVI(const VertexIndexInfo& info);
     public:
         const VertexIndexInfo& polygon(unsigned int numSides);

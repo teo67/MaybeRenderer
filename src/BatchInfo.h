@@ -18,4 +18,8 @@ inline const BatchInfo DYNAMIC_TEXTURE(3, std::vector<unsigned int>{ 4, 2, 1 }, 
 inline const BatchInfo STATIC_COLORTEXTURE(4, std::vector<unsigned int>{ 4, 3, 2, 1 }, true);
 inline const BatchInfo DYNAMIC_COLORTEXTURE(5, std::vector<unsigned int>{ 4, 3, 2, 1 }, false);
 inline const unsigned int NUM_BATCHES = 6;
+inline const unsigned int COLOR_SHADER = 0;
+inline const unsigned int TEXTURE_SHADER = 1;
+inline const unsigned int TEXTURE_COLOR_SHADER = 2;
+inline const unsigned int NUM_SHADERS = 3;
 #endif

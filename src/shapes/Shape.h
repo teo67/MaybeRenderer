@@ -6,6 +6,7 @@
 #include <vector>
 #include "../BatchInfo.h"
 #include <memory>
+#include "../TextureSet.h"
 enum class ShapeState : unsigned char {
     ENABLED, DISABLED_TEMPORARY, DISABLED_PERMANENT, DISABLED_RESET
 };
@@ -33,27 +34,28 @@ struct Vec2 {
 };
 struct VertexIndexInfo {
     std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> texCoordinates;
     std::vector<unsigned int> indices;
-    VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
+    VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoordinates);
 };
 
 class Shape {
     private:
         ShapeState state;
-        bool isStatic;
-        const VertexIndexInfo& vertexIndexInfo;
     protected:
         void fillPositionInfo(std::vector<float>& data, unsigned int offset, unsigned int stride);
         void fillSameValue(std::vector<float>& data, unsigned int offset, unsigned int stride, float value);
         glm::mat4 getMatrix();
+        const VertexIndexInfo& vertexIndexInfo;
+        bool isStatic;
     public:
         PositionInfo transform;
         void setPosition(float x, float y, float z);
         void setRotation(float pitch, float yaw, float roll);
         void setScale(float x, float y, float z);
         Shape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
-        virtual void appendVertexData(std::vector<float>& vertexData, unsigned int index);
-        void appendIndexData(unsigned int* indexData, unsigned int index, unsigned int firstIndex);
+        virtual void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
+        void appendIndexData(std::vector<unsigned int>& indexData, unsigned int index, unsigned int firstIndex);
         unsigned int getNumVertices();
         unsigned int getNumIndices();
         ShapeState getState();

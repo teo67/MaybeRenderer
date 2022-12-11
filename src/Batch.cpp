@@ -4,14 +4,16 @@
 #include <cstring>
 #include <glad/glad.h>
 #include <vector>
+#include <map>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "shapes/Shape.h"
 #include "Batch.h"
 #include "Debugger.h"
-
-Batch::Batch() {
+#include "TextureSet.h"
+Batch::Batch() : Batch(0) {}
+Batch::Batch(unsigned int maxTexturesPerSet) : textureSet(maxTexturesPerSet) {
     initialized = false;
     isStatic = true;
     marked = false;
@@ -70,18 +72,36 @@ void Batch::init(std::vector<unsigned int> sizes, bool isStatic) {
 }
 void Batch::editVertexBuffer(unsigned int offset, std::vector<float>& vertices, unsigned int sizeo) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //Debugger::print(std::to_string(vertices.size()));
+    //std::cout << "VERTICES" << std::endl;
+    //printVector<float>(vertices);
     glBufferSubData(GL_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&vertices[0]));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-void Batch::editIndexBuffer(unsigned int offset, unsigned int* indices, unsigned int sizeo) {
+void Batch::editIndexBuffer(unsigned int offset, std::vector<unsigned int>& indices, unsigned int sizeo) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //Debugger::print(std::to_string(sizeof(indices)));
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeo, indices);
+    //std::cout << "INDICES" << std::endl;
+    //printVector<unsigned int>(indices);
+    //std::cout << "INDEX OFFSET: " << offset << std::endl;
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&indices[0]));
+    //glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, )
 }
 void Batch::draw() {
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, (void*)0);
+    unsigned int size = textureSet.maps.size();
+    if(size > 0) {
+        unsigned int totalSize = 0;
+        for(unsigned int i = 0; i < size; i++) {
+            std::map<unsigned int, unsigned int>& element = textureSet.maps[i];
+            std::map<unsigned int, unsigned int>::iterator it;
+            for(it = element.begin(); it != element.end(); it++) {
+                glBindTextureUnit(it->second, it->first);
+            }
+            glDrawElements(GL_TRIANGLES, ((i == size - 1) ? numIndices : textureSet.lastIndices[i]) - totalSize, GL_UNSIGNED_INT, (void*)(intptr_t)totalSize);
+            totalSize = textureSet.lastIndices[i];
+        }
+    } else {
+        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, (void*)0);
+    }
 }
 void Batch::end() {
     glDeleteVertexArrays(1, &VAO);
@@ -91,8 +111,10 @@ void Batch::end() {
     lastShape = nullptr;
     firstShapeTBA = nullptr;
     lastShapeTBA = nullptr;
+    textureSet.reset();
 }
-void Batch::printVector(std::vector<float>& input) {
+template <typename T>
+void Batch::printVector(std::vector<T>& input) {
     for(int i = 0; i < input.size(); i++) {
         std::cout << input[i] << std::endl;
     }
@@ -156,51 +178,60 @@ void Batch::update() {
         lastShape = last;
         //Debugger::print("popped " + std::to_string(poppedCount) + " shape(s)");
     } // copy from queue to start of shape linked list
-    unsigned int numRemovedVertices = 0;
-    unsigned int numRemovedIndices = 0;
     //Debugger::print("made it past popping");
     if(marked || totalPoppedVertices > 0 || !isStatic) {
+        textureSet.reset();
+        unsigned int numRemovedVertices = 0;
         std::vector<float> newData((numVertices + totalPoppedVertices) * singleSize); //new float[(numVertices + totalPoppedVertices) * singleSize]; // max possible len
+        std::vector<unsigned int> newIndexData(numIndices + totalPoppedIndices);
         std::shared_ptr<Node1> current = firstShape;
-        unsigned int index = 0;
-        while(true) {
+        std::shared_ptr<Node1> previous = nullptr;
+        unsigned int iVertex = 0;
+        unsigned int iIndex = 0;
+        int firstIndex = -1;
+        while(current != nullptr) {
             Shape& cshape = current->getShape();
-            cshape.appendVertexData(newData, index);
-            index += cshape.getNumVertices() * singleSize;
-            if(current->next != nullptr && (current->next)->getShape().getState() == ShapeState::DISABLED_PERMANENT) {
-                numRemovedVertices += current->next->getShape().getNumVertices();
-                numRemovedIndices += current->next->getShape().getNumIndices();
-                current->next = current->next->next; // remove any permanent disables
-            }
-            if(current->next == nullptr) {
-                break;
+            unsigned int verts = cshape.getNumVertices();
+            unsigned int indis = cshape.getNumIndices();
+            if(cshape.getState() == ShapeState::DISABLED_PERMANENT) {
+                if(firstIndex == -1) {
+                    firstIndex = iIndex;
+                }
+                numRemovedVertices += verts;
+                if(previous == nullptr) {
+                    firstShape = current->next;
+                } else {
+                    previous->next = current->next;
+                }
+                if(current->next == nullptr) {
+                    lastShape = previous;
+                }
+            } else {
+                if(firstIndex == -1 && iVertex == numVertices - numRemovedVertices) { // if we reached the new nodes
+                    firstIndex = iIndex;
+                }
+                cshape.appendVertexData(newData, iVertex * singleSize, textureSet, iIndex);
+                if(firstIndex != -1) {
+                    cshape.appendIndexData(newIndexData, iIndex - firstIndex, iVertex);
+                }
+                iVertex += verts;
+                iIndex += indis;
+                previous = current;
             }
             current = current->next;
         }
         //Debugger::print("about to edit vertex buffer");
-        editVertexBuffer(0, newData, (numVertices + totalPoppedVertices - numRemovedVertices) * singleSize * sizeof(float));
-        marked = false;
-    }
-    if(numRemovedVertices > 0 || totalPoppedVertices > 0) {
-        // std::cout << "num indices: " << numIndices << std::endl;
-        // std::cout << "total popped indices: " << totalPoppedIndices << std::endl;
-        // std::cout << "removed indices: " << numRemovedIndices << std::endl;
-        unsigned int* newIndexData = new unsigned int[numIndices + totalPoppedIndices - numRemovedIndices];
-        std::shared_ptr<Node1> current = numRemovedVertices > 0 ? firstShape : firstPopped;
-        unsigned int index = numRemovedVertices > 0 ? 0 : numIndices;
-        unsigned int referenceIndex = numRemovedVertices > 0 ? 0 : numVertices - numRemovedVertices;
-        while(true) {
-            Shape& cshape = current->getShape();
-            cshape.appendIndexData(newIndexData, index, referenceIndex);
-            index += cshape.getNumIndices();
-            referenceIndex += cshape.getNumVertices();
-            if(current->next == nullptr) {
-                break;
-            }
-            current = current->next;
+        //std::cout << "iVertex: " << iVertex << ", numRemoved: " << numRemovedVertices << std::endl;
+        editVertexBuffer(0, newData, iVertex * singleSize * sizeof(float));
+        //std::cout << "first Index: " << firstIndex << ", iIndex: " << iIndex << std::endl;
+        //printVector<unsigned int>(newIndexData);
+        if(firstIndex != -1) {
+            editIndexBuffer(firstIndex * sizeof(unsigned int), newIndexData, (iIndex - firstIndex) * sizeof(unsigned int));
         }
-        editIndexBuffer(0, newIndexData, (numIndices + totalPoppedIndices - numRemovedIndices) * sizeof(unsigned int));
-        numIndices = index;
-        numVertices = numVertices + totalPoppedVertices - numRemovedVertices;
+        numVertices = iVertex;
+        numIndices = iIndex;
+        //std::cout << numVertices << std::endl;
+        //std::cout << numIndices << std::endl;
+        marked = false;
     }
 }

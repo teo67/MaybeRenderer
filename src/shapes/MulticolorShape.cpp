@@ -14,7 +14,7 @@ Shape(_positionInfo, _vertexIndexInfo, _isStatic)
 MulticolorShape::MulticolorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
 MulticolorShape(PositionInfo(), _vertexIndexInfo, _isStatic){}
 
-void MulticolorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index) {
+void MulticolorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex) {
     fillPositionInfo(vertexData, index, 7);
     for(int i = 0; i < colors.size(); i++) {
         vertexData[index + 4 + 7 * i] = colors[i].r;

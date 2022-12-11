@@ -13,7 +13,7 @@ Shape(_positionInfo, _vertexIndexInfo, _isStatic), color(Color())
 ColorShape::ColorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :
 ColorShape(PositionInfo(), _vertexIndexInfo, _isStatic){}
 
-void ColorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index) {
+void ColorShape::appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex) {
     fillPositionInfo(vertexData, index, 7);
     fillSameValue(vertexData, index + 4, 7, color.r);
     fillSameValue(vertexData, index + 5, 7, color.g);

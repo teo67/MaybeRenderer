@@ -18,8 +18,8 @@ PositionInfo::PositionInfo(float _x, float _y, float _z, float pitch, float yaw,
 }
 PositionInfo::PositionInfo(float x, float y, float z) : PositionInfo(x, y, z, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f) {}
 PositionInfo::PositionInfo() : PositionInfo(0.0f, 0.0f, 0.0f) {}
-VertexIndexInfo::VertexIndexInfo(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices)
-: vertices(_vertices), indices(_indices) {
+VertexIndexInfo::VertexIndexInfo(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, std::vector<glm::vec2>& _texCoords)
+: vertices(_vertices), indices(_indices), texCoordinates(_texCoords) {
 }
 Vec2::Vec2(float x, float y) {
     this->x = x;
@@ -75,7 +75,7 @@ void Shape::fillPositionInfo(std::vector<float>& data, unsigned int offset, unsi
     }
 }
 
-void Shape::appendIndexData(unsigned int* data, unsigned int index, unsigned int firstIndex) {
+void Shape::appendIndexData(std::vector<unsigned int>& data, unsigned int index, unsigned int firstIndex) {
     for(int i = 0; i < vertexIndexInfo.indices.size(); i++) {
         data[index + i] = vertexIndexInfo.indices[i] + firstIndex;
     }
@@ -88,7 +88,7 @@ unsigned int Shape::getNumIndices() {
     return vertexIndexInfo.indices.size();
 }
 
-void Shape::appendVertexData(std::vector<float>& vertexData, unsigned int index) {
+void Shape::appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex) {
     std::cout << "APPENDING EMPTY VERTEX DATA!!" << std::endl;
 }
 ShapeState Shape::getState() {

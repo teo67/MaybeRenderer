@@ -4,7 +4,6 @@
 #include <string>
 #include <cstring>
 #include <math.h>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -30,25 +29,7 @@ void Camera::updateVectors() {
 Camera::Camera() {
     this->initDefault();
 }
-Camera::Camera(float yaw, float pitch, float fov, float speed, float sensitivity) {
-    this->initDefault();
-    this->yaw = yaw;
-    this->pitch = pitch;
-    this->fov = fov;
-    this->speed = speed;
-    this->sensitivity = sensitivity;
-}
-Camera::Camera(float yaw, float pitch) {
-    this->initDefault();
-    this->yaw = yaw;
-    this->pitch = pitch;
-}
-Camera::Camera(float fov, float speed, float sensitivity) {
-    this->initDefault();
-    this->fov = fov;
-    this->speed = speed;
-    this->sensitivity = sensitivity;
-}
+
 void Camera::forward(float dt) {
     position += speed * forwardVector * dt;
 }
@@ -79,10 +60,19 @@ void Camera::handleScroll(double xoffset, double yoffset) {
     if (fov > 45.0f)
         fov = 45.0f; 
 }
-float Camera::getFOV() {
-    return this->fov;
-}
 glm::mat4 Camera::getView() {
     // std::cout << forwardVector.x << " " << forwardVector.y << " " << forwardVector.z << std::endl;
     return glm::lookAt(position, position + forwardVector, UP);
+}
+void Camera::setFOV(float _fov) {
+    fov = _fov;
+}
+void Camera::setSensitivity(float sens) {
+    sensitivity = sens;
+}
+void Camera::setSpeed(float _speed) {
+    speed = _speed;
+}
+float Camera::getFOV() {
+    return fov;
 }

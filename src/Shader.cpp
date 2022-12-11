@@ -8,22 +8,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
-using namespace std;
-string Shader::locationEquals(int& input) {
+Shader::Shader() {}
+std::string Shader::locationEquals(int& input) {
     input++;
-    return "layout (location = " + to_string(input) + ") ";
+    return "layout (location = " + std::to_string(input) + ") ";
 }
 void Shader::initShader(
     ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures
 ) {
     if(color == ColorOptions::NONE && texture == TextureOptions::NONE) {
-        cout << "error generating texture: either a color or a texture must exist!" << endl;
+        std::cout << "error generating texture: either a color or a texture must exist!" << std::endl;
         return;
     }
     if(texture == TextureOptions::NONE && numTextures > 0) {
-        cout << "error generating texture: if this shader doesn't accept textures, there cannot be any textures." << endl;
+        std::cout << "error generating texture: if this shader doesn't accept textures, there cannot be any textures." << std::endl;
     }
-    string vertexCode;
+    std::string vertexCode;
     vertexCode += "#version 330 core\n";
     int location = -1;
     vertexCode += this->locationEquals(location) + "in vec4 aPos;\n";
@@ -37,10 +37,10 @@ void Shader::initShader(
     }
     if(numTextures > 0) {
         vertexCode += this->locationEquals(location) + "in uint texIndex;\n";
-        vertexCode += "out uint TexIndex;\n";
+        vertexCode += "flat out uint TexIndex;\n";
         if(texture == TextureOptions::MIX) {
             vertexCode += this->locationEquals(location) + "in uint texIndex2;\n";
-            vertexCode += "out uint TexIndex2;\n";
+            vertexCode += "flat out uint TexIndex2;\n";
         }
     }
     if(transform) {
@@ -66,7 +66,7 @@ void Shader::initShader(
     }
     vertexCode += "}";
 
-    string fragmentCode;
+    std::string fragmentCode;
     fragmentCode += "#version 330 core\n";
     fragmentCode += "out vec4 FragColor;\n";
     if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
@@ -92,9 +92,9 @@ void Shader::initShader(
         }
     }
     if(numTextures > 0) {
-        fragmentCode += "in uint TexIndex;\n";
+        fragmentCode += "flat in uint TexIndex;\n";
         if(texture == TextureOptions::MIX) {
-            fragmentCode += "in uint TexIndex2;\n";
+            fragmentCode += "flat in uint TexIndex2;\n";
         }
     }
     fragmentCode += "void main() {\n";
@@ -107,7 +107,7 @@ void Shader::initShader(
         if(numTextures > 0) {
             fragmentCode += "[TexIndex]";
         }
-        fragmentCode == ", TexCoord)";
+        fragmentCode += ", TexCoord)";
     }
     if(texture == TextureOptions::MIX) {
         fragmentCode += ", texture(texture2";
@@ -128,8 +128,6 @@ void Shader::initShader(
     }
     fragmentCode += ";\n";
     fragmentCode += "}";
-    // std::cout << vertexCode << std::endl;
-    // std::cout << fragmentCode << std::endl;
     this->initShader(vertexCode, fragmentCode);
 }
 Shader::Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures) {
@@ -150,22 +148,22 @@ Shader::Shader(TextureOptions texture, unsigned int numTextures) {
 Shader::Shader(ColorOptions color, TextureOptions texture, unsigned int numTextures) {
     this->initShader(color, texture, true, numTextures);
 }
-Shader::Shader(string vertexPath, string fragmentPath, bool alreadyRead) {
+Shader::Shader(std::string vertexPath, std::string fragmentPath, bool alreadyRead) {
     if(alreadyRead) {
         this->initShader(vertexPath, fragmentPath);
     } else {
-        string vertexCode;
-        string fragmentCode;
-        ifstream vShaderFile;
-        ifstream fShaderFile;
+        std::string vertexCode;
+        std::string fragmentCode;
+        std::ifstream vShaderFile;
+        std::ifstream fShaderFile;
         // ensure ifstream objects can throw exceptions:
-        vShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
-        fShaderFile.exceptions(ifstream::failbit | ifstream::badbit);
+        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         try {
             // open files
             vShaderFile.open(vertexPath);
             fShaderFile.open(fragmentPath);
-            stringstream vShaderStream, fShaderStream;
+            std::stringstream vShaderStream, fShaderStream;
             // read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();
             fShaderStream << fShaderFile.rdbuf();		
@@ -175,13 +173,13 @@ Shader::Shader(string vertexPath, string fragmentPath, bool alreadyRead) {
             // convert stream into string
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();		
-        } catch(ifstream::failure e) {
-            cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n" << strerror(errno) << endl;
+        } catch(std::ifstream::failure e) {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n" << strerror(errno) << std::endl;
         }
         this->initShader(vertexCode, fragmentCode);
     }
 }
-void Shader::initShader(string vertexCode, string fragmentCode) {
+void Shader::initShader(std::string vertexCode, std::string fragmentCode) {
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
     GLuint vertexShader;
@@ -193,7 +191,7 @@ void Shader::initShader(string vertexCode, string fragmentCode) {
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if(!success) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
         return;
     }
     GLuint fragmentShader;
@@ -203,7 +201,7 @@ void Shader::initShader(string vertexCode, string fragmentCode) {
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success) {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
         return;
     }
     program = glCreateProgram();
@@ -213,7 +211,7 @@ void Shader::initShader(string vertexCode, string fragmentCode) {
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if(!success) {
         glGetProgramInfoLog(program, 512, NULL, infoLog);
-        cout << "ERROR::SHADERPROGRAM::GENERATION_FAILED\n" << infoLog << endl;
+        std::cout << "ERROR::SHADERPROGRAM::GENERATION_FAILED\n" << infoLog << std::endl;
         return;
     }
     glDeleteShader(vertexShader);
@@ -225,14 +223,14 @@ void Shader::end() {
 void Shader::use() {
     glUseProgram(program);
 }
-GLuint Shader::getLocation(string name) {
+GLuint Shader::getLocation(std::string name) {
     return glGetUniformLocation(program, name.c_str());
 }
-void Shader::transform(glm::mat4 trans, string transString) {
+void Shader::transform(glm::mat4 trans, std::string transString) {
     GLuint transformLoc = this->getLocation(transString);
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 }
-void Shader::sendVec3f(float a, float b, float c, string vecString) {
+void Shader::sendVec3f(float a, float b, float c, std::string vecString) {
     GLuint vecLoc = this->getLocation(vecString);
     glUniform3f(vecLoc, a, b, c);
 }

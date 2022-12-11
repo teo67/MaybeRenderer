@@ -20,9 +20,6 @@ class Camera {
         void initDefault();
         void updateVectors();
     public:
-        Camera(float yaw, float pitch, float fov, float speed, float sensitivity);
-        Camera(float fov, float speed, float sensitivity);
-        Camera(float yaw, float pitch);
         Camera();
         void handleMouse(Mouse mouse);
         void handleScroll(double xoffset, double yoffset);
@@ -30,7 +27,10 @@ class Camera {
         void backward(float dt);
         void left(float dt);
         void right(float dt);
-        float getFOV();
         glm::mat4 getView();
+        float getFOV();
+        void setFOV(float fov);
+        void setSensitivity(float sens);
+        void setSpeed(float speed);
 };
 #endif

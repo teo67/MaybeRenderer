@@ -9,6 +9,7 @@ class Shader {
         void initShader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures);
         std::string locationEquals(int& input);
     public:
+        Shader();
         Shader(std::string vertexPath, std::string fragmentPath, bool alreadyRead);
         Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures);
         Shader(ColorOptions color, bool transform);
