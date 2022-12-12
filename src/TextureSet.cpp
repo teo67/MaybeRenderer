@@ -1,14 +1,17 @@
 #include "TextureSet.h"
 #include "map"
-TextureSet::TextureSet(unsigned int maxTexturesPerSet) {
-    maxTextureUnits = maxTexturesPerSet;
+#include <glad/glad.h>
+
+unsigned int TextureSet::maxTextureUnits = 0;
+
+TextureSet::TextureSet() {
     reset();
 }
 
-unsigned int TextureSet::getTexture(unsigned int texture, unsigned int possibleNewLastIndex) {
+GLuint TextureSet::getTexture(GLuint texture, unsigned int possibleNewLastIndex) {
     if(maps.size() > 0) {
-        std::map<unsigned int, unsigned int>& lastMap = maps.back();
-        std::map<unsigned int, unsigned int>::const_iterator found = lastMap.find(texture);
+        std::map<GLuint, GLuint>& lastMap = maps.back();
+        std::map<GLuint, GLuint>::const_iterator found = lastMap.find(texture);
         if(found != lastMap.end()) {
             return found->second;
         }
@@ -18,8 +21,8 @@ unsigned int TextureSet::getTexture(unsigned int texture, unsigned int possibleN
         }
         lastIndices.push_back(possibleNewLastIndex);
     }
-    nextInt = 0;
-    maps.push_back({});
+    nextInt = 1;
+    maps.push_back({{texture, 0}});
     return 0;
 }
 

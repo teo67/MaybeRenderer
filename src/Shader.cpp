@@ -36,11 +36,11 @@ void Shader::initShader(
         vertexCode += "out vec2 TexCoord;\n";
     }
     if(numTextures > 0) {
-        vertexCode += this->locationEquals(location) + "in uint texIndex;\n";
-        vertexCode += "flat out uint TexIndex;\n";
+        vertexCode += this->locationEquals(location) + "in float texIndex;\n";
+        vertexCode += "out float TexIndex;\n";
         if(texture == TextureOptions::MIX) {
-            vertexCode += this->locationEquals(location) + "in uint texIndex2;\n";
-            vertexCode += "flat out uint TexIndex2;\n";
+            vertexCode += this->locationEquals(location) + "in float texIndex2;\n";
+            vertexCode += "out float TexIndex2;\n";
         }
     }
     if(transform) {
@@ -68,7 +68,7 @@ void Shader::initShader(
 
     std::string fragmentCode;
     fragmentCode += "#version 330 core\n";
-    fragmentCode += "out vec4 FragColor;\n";
+    fragmentCode += "layout(location = 0) out vec4 FragColor;\n";
     if(color == ColorOptions::VARIABLE_NO_LIGHT || color == ColorOptions::VARIABLE_WITH_LIGHT) {
         fragmentCode += "in vec3 color;\n";
         if(color == ColorOptions::VARIABLE_WITH_LIGHT) {
@@ -92,9 +92,9 @@ void Shader::initShader(
         }
     }
     if(numTextures > 0) {
-        fragmentCode += "flat in uint TexIndex;\n";
+        fragmentCode += "in float TexIndex;\n";
         if(texture == TextureOptions::MIX) {
-            fragmentCode += "flat in uint TexIndex2;\n";
+            fragmentCode += "in float TexIndex2;\n";
         }
     }
     fragmentCode += "void main() {\n";
@@ -105,14 +105,15 @@ void Shader::initShader(
     if(texture != TextureOptions::NONE) {
         fragmentCode += "texture(texture1";
         if(numTextures > 0) {
-            fragmentCode += "[TexIndex]";
+            fragmentCode += "[int(round(TexIndex))]";
         }
         fragmentCode += ", TexCoord)";
+        //fragmentCode += "vec4(round(TexIndex), 0.0, 0.0, 0.0)";
     }
     if(texture == TextureOptions::MIX) {
         fragmentCode += ", texture(texture2";
         if(numTextures > 0) {
-            fragmentCode += "[TexIndex2]";
+            fragmentCode += "[int(round(TexIndex2))]";
         }
         fragmentCode += ", TexCoord), mixPercent)";
     }
@@ -128,6 +129,8 @@ void Shader::initShader(
     }
     fragmentCode += ";\n";
     fragmentCode += "}";
+    std::cout << vertexCode << std::endl;
+    std::cout << fragmentCode << std::endl;
     this->initShader(vertexCode, fragmentCode);
 }
 Shader::Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures) {
@@ -233,4 +236,8 @@ void Shader::transform(glm::mat4 trans, std::string transString) {
 void Shader::sendVec3f(float a, float b, float c, std::string vecString) {
     GLuint vecLoc = this->getLocation(vecString);
     glUniform3f(vecLoc, a, b, c);
+}
+void Shader::sendUniformArray(unsigned int size, const int* data, std::string str) {
+    GLuint loc = this->getLocation(str);
+    glUniform1iv(loc, size, data);
 }

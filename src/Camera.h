@@ -11,7 +11,6 @@ class Camera {
     private:
         float yaw;
         float pitch;
-        float fov;
         glm::vec3 position;  
         glm::vec3 forwardVector;
         glm::vec3 rightVector;
@@ -22,14 +21,11 @@ class Camera {
     public:
         Camera();
         void handleMouse(Mouse mouse);
-        void handleScroll(double xoffset, double yoffset);
         void forward(float dt);
         void backward(float dt);
         void left(float dt);
         void right(float dt);
         glm::mat4 getView();
-        float getFOV();
-        void setFOV(float fov);
         void setSensitivity(float sens);
         void setSpeed(float speed);
 };

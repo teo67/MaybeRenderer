@@ -12,7 +12,6 @@
 void Camera::initDefault() {
     this->yaw = defaultYaw;
     this->pitch = defaultPitch;
-    this->fov = defaultFov;
     this->sensitivity = defaultSensitivity;
     this->speed = defaultSpeed;
     this->position = defaultPosition;
@@ -53,26 +52,13 @@ void Camera::handleMouse(Mouse mouse) {
         pitch = -89.0f;
     this->updateVectors();
 }
-void Camera::handleScroll(double xoffset, double yoffset) {
-    fov -= (float)yoffset;
-    if (fov < 1.0f)
-        fov = 1.0f;
-    if (fov > 45.0f)
-        fov = 45.0f; 
-}
 glm::mat4 Camera::getView() {
     // std::cout << forwardVector.x << " " << forwardVector.y << " " << forwardVector.z << std::endl;
     return glm::lookAt(position, position + forwardVector, UP);
-}
-void Camera::setFOV(float _fov) {
-    fov = _fov;
 }
 void Camera::setSensitivity(float sens) {
     sensitivity = sens;
 }
 void Camera::setSpeed(float _speed) {
     speed = _speed;
-}
-float Camera::getFOV() {
-    return fov;
 }

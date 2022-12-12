@@ -32,7 +32,6 @@ class Batch {
     public:
         void init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsigned int indexSize, bool isStatic, unsigned int maxNewShapesPerFrame);
         void init(std::vector<unsigned int> sizes, bool isStatic);
-        Batch(unsigned int maxTexturesPerSet); //creates batch w/o initializing
         Batch();
         void draw();
         void update();

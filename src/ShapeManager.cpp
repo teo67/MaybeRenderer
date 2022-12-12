@@ -19,10 +19,14 @@ ShapeManager::ShapeManager() : ShapeManager(defaultRadius) {}
 
 void ShapeManager::generateRegularPolygon(unsigned int numSides, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoords) {
     for(unsigned int i = 0; i < numSides; i++) {
-        float theta = 360 * i / numSides;
+        float theta = 360 * i / numSides + 45; // add 45 to make squares nicer
         float xcomp = sinf(glm::radians(theta));
         float zcomp = cosf(glm::radians(theta));
         vertices[i] = glm::vec3(radius * xcomp, 0.0f, radius * zcomp);
+        if(numSides == 4) {
+            xcomp *= sqrt(2.0f);
+            zcomp *= sqrt(2.0f); // special case for squares to fit textures nicely
+        }
         texCoords[i] = glm::vec2((xcomp + 1) / 2, (zcomp + 1) / 2);
     }
     unsigned int index = 0;
@@ -58,7 +62,7 @@ const VertexIndexInfo& ShapeManager::createPrism(unsigned int numSides) {
     for(int i = 0; i < numSides; i++) {
         vertices[numSides + i] = vertices[i];
         vertices[numSides + i].y = height;
-        coords[numSides + 1] = coords[i];
+        coords[numSides + i] = coords[i];
         indices[index] = i; // add side plates, two triangles at a time
         indices[index + 1] = (i == numSides - 1) ? 0 : (i + 1);
         indices[index + 2] = i + numSides;

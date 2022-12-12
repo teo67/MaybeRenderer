@@ -3,13 +3,15 @@
 #include "Shape.h"
 #include "ColorShape.h"
 #include <string>
+#include <glad/glad.h>
 class TexturedShape : public Shape {
     private:
-        unsigned int texture;
+        GLuint texture;
     public:
-        TexturedShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic, unsigned int texture);
-        void setTexture(unsigned int texture);
+        TexturedShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic, GLuint texture);
+        void setTexture(GLuint texture);
         void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
+        const BatchInfo& getFormat();
 };
 
 class TextureNode : public Node1 {

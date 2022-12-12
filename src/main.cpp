@@ -14,6 +14,7 @@
 #include "BatchManager.h"
 #include "shapes/ColorShape.h"
 #include "shapes/MulticolorShape.h"
+#include "shapes/TexturedShape.h"
 #include "shapes/Shape.h"
 #include <memory>
 #include "Game.h"
@@ -32,26 +33,23 @@ void processInput(Game& game) {
 }
 int main() {
     Game game(800, 600);
-    MulticolorShape& shape1 = game.generateMulticolorShape(game.shaman.pyramid(4), false);
-    Color& topColor = shape1.getColor(4);
-    Color& aColor = shape1.getColor(0);
-    Color& bColor = shape1.getColor(1);
-    Color& cColor = shape1.getColor(2);
-    Color& dColor = shape1.getColor(3);
+    game.registerTexture("grass", "textures/grass.jpg");
+    game.registerTexture("container", "textures/container.jpg");
+    
+
+    
+    TexturedShape& shape1 = game.generateTexturedShape(game.shaman.prism(4), false, "container");
+    TexturedShape& shape2 = game.generateTexturedShape(game.shaman.prism(4), false, "grass");
+TexturedShape& shape3 = game.generateTexturedShape(game.shaman.prism(4), false, "grass");
+    
+    shape2.setPosition(2.0, 0.0, 0.0);
+    shape3.setPosition(0.0, 0.0, 2.0);
+    game.backgroundColor.r = 0.0;
+    game.backgroundColor.g = 0.0;
+    game.backgroundColor.b = 1.0;
     while(!game.closed()) {
         processInput(game);
-        float currentTime = game.time();
-        shape1.transform.yaw = currentTime * 20.0f;
-        topColor.r = (sin(currentTime) + 1.0f) / 2.0f;
-        aColor.g = (cos(currentTime) + 1.0f) / 2.0f;
-        aColor.b = (cos(currentTime) + 1.0f) / 2.0f;
-        bColor.g = (cos(currentTime) + 1.0f) / 2.0f;
-        bColor.b = (sin(currentTime) + 1.0f) / 2.0f;
-        cColor.g = (sin(currentTime) + 1.0f) / 2.0f;
-        cColor.b = (sin(currentTime) + 1.0f) / 2.0f;
-        dColor.g = (sin(currentTime) + 1.0f) / 2.0f;
-        dColor.b = (cos(currentTime) + 1.0f) / 2.0f;
-        game.backgroundColor.b = (cos(currentTime) + 1.0f) / 2.0f;
+        //shape1.setPosition(sinf(game.time()), 0.0f, 0.0f);
         game.render();
     }
     return 0;

@@ -22,5 +22,6 @@ class Shader {
         GLuint getLocation(std::string name);
         void transform(glm::mat4 trans, std::string transString);
         void sendVec3f(float a, float b, float c, std::string vecString);
+        void sendUniformArray(unsigned int count, const int* val, std::string str);
 };
 #endif

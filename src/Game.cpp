@@ -20,8 +20,7 @@ Game* _getGame(GLFWwindow* window) {
 
 void _resizeCallback(GLFWwindow* window, int width, int height) {
     Game* game = _getGame(window);
-    glViewport(0, 0, width, height);
-    game->updateProjectionMatrix(width, height);
+    game->resizeWindow(width, height);
 }
 void _mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     Game* game = _getGame(window);
@@ -38,13 +37,16 @@ Game::Game(unsigned int width, unsigned int height) : batman(BatchManager()), sh
     backgroundColor = Color();
     mouse = Mouse();
     camera = Camera();
-    updateProjectionMatrix(width, height);
+    this->width = width;
+    this->height = height;
+    fov = defaultFov;
+    updateProjectionMatrix();
     _dt = 0.0f;
     previousTime = 0.0f;
 
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -70,6 +72,12 @@ Game::Game(unsigned int width, unsigned int height) : batman(BatchManager()), sh
     batman.init();
 }
 
+void Game::resizeWindow(unsigned int width, unsigned int height) {
+    this->width = width;
+    this->height = height;
+    glViewport(0, 0, width, height);
+    updateProjectionMatrix();
+}
 
 float Game::dt() {
     return _dt;
@@ -96,7 +104,11 @@ void Game::respondToMouse() {
 }
 
 void Game::respondToScroll(double x, double y) {
-    camera.handleScroll(x, y); // can be edited by user
+}
+
+void Game::setFOV(float _fov) {
+    fov = _fov;
+    updateProjectionMatrix();
 }
 
 Game::~Game() {
@@ -117,8 +129,8 @@ void Game::render() {
     glfwPollEvents();
 }
 
-void Game::updateProjectionMatrix(unsigned int width, unsigned int height) {
-    projectionMatrix = glm::perspective(glm::radians(camera.getFOV()), (float)width / (float)height, 0.1f, 100.0f);
+void Game::updateProjectionMatrix() {
+    projectionMatrix = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
 }
 
 ColorShape& Game::generateColorShape(const VertexIndexInfo& viInfo, bool isStatic) {
@@ -135,7 +147,7 @@ MulticolorShape& Game::generateMulticolorShape(const VertexIndexInfo& viInfo, bo
     return test->getShape();
 }
 
-TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, unsigned int tex) {
+TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, GLuint tex) {
     TexturedShape sha(viInfo, isStatic, tex);
     std::shared_ptr<TextureNode> test = std::make_shared<TextureNode>(TextureNode(sha));
     batman.addShape(test);
@@ -146,15 +158,15 @@ TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool i
     return generateTexturedShape(viInfo, isStatic, getTexture(texName));
 }
 
-unsigned int Game::getTexture(std::string name) {
+GLuint Game::getTexture(std::string name) {
     return textureMap[name];
 }
 
 void Game::setTextureToImage(std::string path) {
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    int _width, _height, nrChannels;
+    unsigned char *data = stbi_load(path.c_str(), &_width, &_height, &nrChannels, 0);
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Failed to load texture" << std::endl;
@@ -163,7 +175,7 @@ void Game::setTextureToImage(std::string path) {
 }
 
 void Game::registerTexture(std::string name, std::string path) {
-    unsigned int texture;
+    GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     // set the texture wrapping/filtering options (on the currently bound texture object)
@@ -173,15 +185,17 @@ void Game::registerTexture(std::string name, std::string path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load and generate the texture
     setTextureToImage(path);
+    std::cout << "tex: " << texture << std::endl;
     textureMap[name] = texture;
 }
 
 void Game::changeTextureImage(std::string name, std::string path) {
-    unsigned int texture = getTexture(name);
+    GLuint texture = getTexture(name);
     glBindTexture(GL_TEXTURE_2D, texture);
     setTextureToImage(path);
 }
 
 void Game::removeTexture(std::string name) {
+    glDeleteTextures(1, &textureMap[name]);
     textureMap.erase(name);
 }
