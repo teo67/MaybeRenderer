@@ -8,7 +8,7 @@ class TexturedShape : public Shape {
     private:
         GLuint texture;
     public:
-        TexturedShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic, GLuint texture);
+        TexturedShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         void setTexture(GLuint texture);
         void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
         const BatchInfo& getFormat();

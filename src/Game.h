@@ -2,9 +2,11 @@
 #define GAME_H
 #include "BatchManager.h"
 #include "ShapeManager.h"
+#include "TextureManager.h"
 #include "shapes/ColorShape.h"
 #include "shapes/MulticolorShape.h"
 #include "shapes/TexturedShape.h"
+#include "shapes/MultitexturedShape.h"
 #include "Mouse.h"
 #include "Camera.h"
 #include <map>
@@ -14,8 +16,6 @@
 class Game {
     private:
         BatchManager batman;
-        std::map<std::string, GLuint> textureMap;
-        void setTextureToImage(std::string path);
         glm::mat4 projectionMatrix;
         float _dt;
         float previousTime;
@@ -28,18 +28,15 @@ class Game {
         Game(unsigned int width, unsigned int height);
         ~Game();
         ShapeManager shaman;
+        TextureManager texman; // i couldn't think of a good name :(((
         Mouse mouse;
         Camera camera;
         Color backgroundColor;
         void render();
         ColorShape& generateColorShape(const VertexIndexInfo& viInfo, bool isStatic);
         MulticolorShape& generateMulticolorShape(const VertexIndexInfo& viInfo, bool isStatic);
-        TexturedShape& generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, GLuint tex);
-        TexturedShape& generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, std::string texName);
-        void registerTexture(std::string name, std::string path);
-        void changeTextureImage(std::string name, std::string path);
-        void removeTexture(std::string name);
-        GLuint getTexture(std::string name);
+        TexturedShape& generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic);
+        MultitexturedShape& generateMultitexturedShape(const VertexIndexInfo& viInfo, bool isStatic);
         float dt();
         float time();
         bool isKeyPressed(int key);

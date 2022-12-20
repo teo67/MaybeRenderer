@@ -2,8 +2,9 @@
 #include "BatchManager.h"
 #include "ShapeManager.h"
 #include "shapes/ColorShape.h"
-#include "shapes./MulticolorShape.h"
+#include "shapes/MulticolorShape.h"
 #include "shapes/TexturedShape.h"
+#include "shapes/MultitexturedShape.h"
 #include <stb/stb_image.h>
 #include <memory>
 #include <glad/glad.h>
@@ -32,8 +33,7 @@ void _scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     game->respondToScroll(xoffset, yoffset);
 }
 
-Game::Game(unsigned int width, unsigned int height) : batman(BatchManager()), shaman(ShapeManager()) {
-    textureMap = {};
+Game::Game(unsigned int width, unsigned int height) : batman(BatchManager()), shaman(ShapeManager()), texman(TextureManager()) {
     backgroundColor = Color();
     mouse = Mouse();
     camera = Camera();
@@ -114,7 +114,7 @@ void Game::setFOV(float _fov) {
 Game::~Game() {
     shaman.cleanup();
     batman.cleanup();
-    textureMap = {};
+    texman.cleanup();
     glfwTerminate();
 }
 void Game::render() {
@@ -147,55 +147,16 @@ MulticolorShape& Game::generateMulticolorShape(const VertexIndexInfo& viInfo, bo
     return test->getShape();
 }
 
-TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, GLuint tex) {
-    TexturedShape sha(viInfo, isStatic, tex);
+TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic) {
+    TexturedShape sha(viInfo, isStatic);
     std::shared_ptr<TextureNode> test = std::make_shared<TextureNode>(TextureNode(sha));
     batman.addShape(test);
     return test->getShape();
 }
 
-TexturedShape& Game::generateTexturedShape(const VertexIndexInfo& viInfo, bool isStatic, std::string texName) {
-    return generateTexturedShape(viInfo, isStatic, getTexture(texName));
-}
-
-GLuint Game::getTexture(std::string name) {
-    return textureMap[name];
-}
-
-void Game::setTextureToImage(std::string path) {
-    int _width, _height, nrChannels;
-    unsigned char *data = stbi_load(path.c_str(), &_width, &_height, &nrChannels, 0);
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-}
-
-void Game::registerTexture(std::string name, std::string path) {
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load and generate the texture
-    setTextureToImage(path);
-    std::cout << "tex: " << texture << std::endl;
-    textureMap[name] = texture;
-}
-
-void Game::changeTextureImage(std::string name, std::string path) {
-    GLuint texture = getTexture(name);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    setTextureToImage(path);
-}
-
-void Game::removeTexture(std::string name) {
-    glDeleteTextures(1, &textureMap[name]);
-    textureMap.erase(name);
+MultitexturedShape& Game::generateMultitexturedShape(const VertexIndexInfo& viInfo, bool isStatic) {
+    MultitexturedShape sha(viInfo, isStatic);
+    std::shared_ptr<MultitextureNode> test = std::make_shared<MultitextureNode>(MultitextureNode(sha));
+    batman.addShape(test);
+    return test->getShape();
 }

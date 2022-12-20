@@ -35,8 +35,11 @@ struct Vec2 {
 struct VertexIndexInfo {
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> texCoordinates;
+    std::vector<unsigned int> faceNumbers;
     std::vector<unsigned int> indices;
-    VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoordinates);
+    std::vector<unsigned int> faceIndexOffsets;
+    void print() const;
+    VertexIndexInfo(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices, std::vector<glm::vec2>& texCoordinates, std::vector<unsigned int>& faceNumbers, std::vector<unsigned int>& faceIndexOffsets);
 };
 
 class Shape {

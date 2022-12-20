@@ -18,8 +18,26 @@ PositionInfo::PositionInfo(float _x, float _y, float _z, float pitch, float yaw,
 }
 PositionInfo::PositionInfo(float x, float y, float z) : PositionInfo(x, y, z, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f) {}
 PositionInfo::PositionInfo() : PositionInfo(0.0f, 0.0f, 0.0f) {}
-VertexIndexInfo::VertexIndexInfo(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, std::vector<glm::vec2>& _texCoords)
-: vertices(_vertices), indices(_indices), texCoordinates(_texCoords) {
+VertexIndexInfo::VertexIndexInfo(std::vector<glm::vec3>& _vertices, std::vector<unsigned int>& _indices, std::vector<glm::vec2>& _texCoords, std::vector<unsigned int>& _faceNumbers, std::vector<unsigned int>& _faceIndexOffsets)
+: vertices(_vertices), indices(_indices), texCoordinates(_texCoords), faceNumbers(_faceNumbers), faceIndexOffsets(_faceIndexOffsets) {
+}
+void VertexIndexInfo::print() const {
+    std::cout << "Vertices: " << std::endl;
+    for(int i = 0; i < vertices.size(); i++) {
+        std::cout << i << ": " << vertices[i].x << ", " << vertices[i].y << ", " << vertices[i].z << ", Face number " << faceNumbers[i] << std::endl;
+    }
+    std::cout << "Indices: " << std::endl;
+    for(int i = 0; i < indices.size(); i += 3) {
+        std::cout << indices[i] << ", " << indices[i + 1] << ", " << indices[i + 2] << std::endl;
+    }
+    std::cout << "Texture Coords: " << std::endl;
+    for(int i = 0; i < texCoordinates.size(); i++) {
+        std::cout << i << ": " << texCoordinates[i].x << ", " << texCoordinates[i].y << std::endl;
+    }
+    std::cout << "Face offsets: " << std::endl;
+    for(int i = 0; i < faceIndexOffsets.size(); i++) {
+        std::cout << i << ": " << faceIndexOffsets[i] << std::endl;
+    }
 }
 Vec2::Vec2(float x, float y) {
     this->x = x;

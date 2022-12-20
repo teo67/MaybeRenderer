@@ -37,10 +37,10 @@ void Shader::initShader(
     }
     if(numTextures > 0) {
         vertexCode += this->locationEquals(location) + "in float texIndex;\n";
-        vertexCode += "out float TexIndex;\n";
+        vertexCode += "flat out float TexIndex;\n";
         if(texture == TextureOptions::MIX) {
             vertexCode += this->locationEquals(location) + "in float texIndex2;\n";
-            vertexCode += "out float TexIndex2;\n";
+            vertexCode += "flat out float TexIndex2;\n";
         }
     }
     if(transform) {
@@ -92,9 +92,9 @@ void Shader::initShader(
         }
     }
     if(numTextures > 0) {
-        fragmentCode += "in float TexIndex;\n";
+        fragmentCode += "flat in float TexIndex;\n";
         if(texture == TextureOptions::MIX) {
-            fragmentCode += "in float TexIndex2;\n";
+            fragmentCode += "flat in float TexIndex2;\n";
         }
     }
     fragmentCode += "void main() {\n";
@@ -105,15 +105,16 @@ void Shader::initShader(
     if(texture != TextureOptions::NONE) {
         fragmentCode += "texture(texture1";
         if(numTextures > 0) {
-            fragmentCode += "[int(round(TexIndex))]";
+            //fragmentCode += "[int(round(TexIndex))]";
+            fragmentCode += "[int(TexIndex)]";
         }
         fragmentCode += ", TexCoord)";
-        //fragmentCode += "vec4(round(TexIndex), 0.0, 0.0, 0.0)";
+        //fragmentCode += "vec4(TexIndex, 0.0, 0.0, 0.0)";
     }
     if(texture == TextureOptions::MIX) {
         fragmentCode += ", texture(texture2";
         if(numTextures > 0) {
-            fragmentCode += "[int(round(TexIndex2))]";
+            fragmentCode += "[int(TexIndex2)]";
         }
         fragmentCode += ", TexCoord), mixPercent)";
     }
@@ -129,8 +130,8 @@ void Shader::initShader(
     }
     fragmentCode += ";\n";
     fragmentCode += "}";
-    std::cout << vertexCode << std::endl;
-    std::cout << fragmentCode << std::endl;
+    //std::cout << vertexCode << std::endl;
+    //std::cout << fragmentCode << std::endl;
     this->initShader(vertexCode, fragmentCode);
 }
 Shader::Shader(ColorOptions color, TextureOptions texture, bool transform, unsigned int numTextures) {

@@ -88,21 +88,20 @@ void Batch::draw() {
     //std::cout << glGetString(GL_VERSION) << std::endl;
     glBindVertexArray(VAO);
     unsigned int size = textureSet.maps.size();
-    //std::cout << "size" << size << std::endl;
+    //std::cout << size << std::endl;
     if(size > 0) {
         unsigned int totalSize = 0;
         for(unsigned int i = 0; i < size; i++) {
             std::map<unsigned int, unsigned int>& element = textureSet.maps[i];
             std::map<unsigned int, unsigned int>::iterator it;
-            // for(it = element.begin(); it != element.end(); it++) {
-            //     glBindTextureUnit(it->second, it->first);
-            //     std::cout << "second: " << it->second << ", first: " << it->first << std::endl;
-            // }
-            glBindTextureUnit(0, 2);
-            glBindTextureUnit(1, 1);
+            for(it = element.begin(); it != element.end(); it++) {
+                glBindTextureUnit(it->second, it->first);
+                //std::cout << "second: " << it->second << ", first: " << it->first << std::endl;
+            }
             //std::cout << "out of the loop" << std::endl;
             unsigned int newSize = (i == size - 1) ? numIndices : textureSet.lastIndices[i];
-            glDrawElements(GL_TRIANGLES, newSize - totalSize, GL_UNSIGNED_INT, (void*)(intptr_t)totalSize);
+            //std::cout << "starting from " << totalSize << ", going for " << newSize - totalSize << std::endl;
+            glDrawElements(GL_TRIANGLES, newSize - totalSize, GL_UNSIGNED_INT, (void*)(intptr_t)(totalSize * sizeof(unsigned int)));
             //std::cout << "we drew" << std::endl;
             totalSize = newSize;
         }

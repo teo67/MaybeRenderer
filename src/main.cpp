@@ -32,18 +32,17 @@ void processInput(Game& game) {
         game.camera.right(dt);
 }
 int main() {
-    Game game(800, 600);
-    game.registerTexture("grass", "textures/grass.jpg");
-    game.registerTexture("container", "textures/container.jpg");
-    
+    Game game(1600, 1200);
+    game.texman.registerTexture("grass", "textures/grass.jpg", false);
+    game.texman.registerTexture("grassTop", "textures/grass-top.jpg", false);
+    game.texman.registerTexture("grassBottom", "textures/grass-bottom.jpg", false);
+    MultitexturedShape& shape = game.generateMultitexturedShape(game.shaman.prism(8, true), true);
+    shape.setTexture(0, game.texman.getTexture("grassBottom"));
+    shape.setTexture(1, game.texman.getTexture("grassTop"));
+    for(int i = 2; i < 10; i++) {
+        shape.setTexture(i, game.texman.getTexture("grass"));
+    }
 
-    
-    TexturedShape& shape1 = game.generateTexturedShape(game.shaman.prism(4), false, "container");
-    TexturedShape& shape2 = game.generateTexturedShape(game.shaman.prism(4), false, "grass");
-TexturedShape& shape3 = game.generateTexturedShape(game.shaman.prism(4), false, "grass");
-    
-    shape2.setPosition(2.0, 0.0, 0.0);
-    shape3.setPosition(0.0, 0.0, 2.0);
     game.backgroundColor.r = 0.0;
     game.backgroundColor.g = 0.0;
     game.backgroundColor.b = 1.0;
