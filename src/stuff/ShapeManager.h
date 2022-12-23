@@ -1,7 +1,7 @@
 #ifndef SHAPEMANAGER_H
 #define SHAPEMANAGER_H
-#include "shapes/Shape.h"
-#include "shapes/ColorShape.h"
+#include "../shapes/Shape.h"
+#include "../shapes/ColorShape.h"
 #include "BatchManager.h"
 #include <map>
 #include <vector>

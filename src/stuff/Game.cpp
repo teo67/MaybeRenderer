@@ -1,10 +1,10 @@
 #include "Game.h"
 #include "BatchManager.h"
 #include "ShapeManager.h"
-#include "shapes/ColorShape.h"
-#include "shapes/MulticolorShape.h"
-#include "shapes/TexturedShape.h"
-#include "shapes/MultitexturedShape.h"
+#include "../shapes/ColorShape.h"
+#include "../shapes/MulticolorShape.h"
+#include "../shapes/TexturedShape.h"
+#include "../shapes/MultitexturedShape.h"
 #include <stb/stb_image.h>
 #include <memory>
 #include <glad/glad.h>
@@ -118,7 +118,7 @@ Game::~Game() {
     glfwTerminate();
 }
 void Game::render() {
-    float currentTime = (float)glfwGetTime();
+    float currentTime = glfwGetTime();
     _dt = currentTime - previousTime;
     previousTime = currentTime;
     glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);

@@ -1,7 +1,6 @@
 #include "ColorShape.h"
 #include "Shape.h"
-#include "../Debugger.h"
-#include "../BatchInfo.h"
+#include "../stuff/BatchInfo.h"
 #include <vector>
 #include <memory>
 ColorShape::ColorShape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :

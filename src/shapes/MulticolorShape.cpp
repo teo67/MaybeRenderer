@@ -1,8 +1,7 @@
 #include "ColorShape.h"
 #include "MulticolorSHape.h"
 #include "Shape.h"
-#include "../Debugger.h"
-#include "../BatchInfo.h"
+#include "../stuff/BatchInfo.h"
 #include <vector>
 #include <memory>
 MulticolorShape::MulticolorShape(PositionInfo _positionInfo, const VertexIndexInfo& _vertexIndexInfo, bool _isStatic) :

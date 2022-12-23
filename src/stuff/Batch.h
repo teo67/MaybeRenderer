@@ -1,6 +1,6 @@
 #ifndef BATCH_H
 #define BATCH_H
-#include "shapes/Shape.h"
+#include "../shapes/Shape.h"
 #include "TextureSet.h"
 #include <glad/glad.h>
 #include <memory>

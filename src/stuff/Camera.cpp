@@ -13,7 +13,6 @@ void Camera::initDefault() {
     this->yaw = defaultYaw;
     this->pitch = defaultPitch;
     this->sensitivity = defaultSensitivity;
-    this->speed = defaultSpeed;
     this->position = defaultPosition;
     this->updateVectors();
 }
@@ -30,16 +29,32 @@ Camera::Camera() {
 }
 
 void Camera::forward(float dt) {
-    position += speed * forwardVector * dt;
+    position += forwardVector * dt;
 }
 void Camera::backward(float dt) {
-    position -= speed * forwardVector * dt;
+    position -= forwardVector * dt;
 }
 void Camera::right(float dt) {
-    position += speed * rightVector * dt;
+    position += rightVector * dt;
 }
 void Camera::left(float dt) {
-    position -= speed * rightVector * dt;
+    position -= rightVector * dt;
+}
+void Camera::setPosition(float x, float y, float z) {
+    position = glm::vec3(x, y, z);
+}
+void Camera::setRotation(float _yaw, float _pitch) {
+    yaw = _yaw;
+    pitch = _pitch;
+    updateVectors();
+}
+void Camera::setYaw(float _yaw) {
+    yaw = _yaw;
+    updateVectors();
+}
+void Camera::setPitch(float _pitch) {
+    pitch = _pitch;
+    updateVectors();
 }
 void Camera::handleMouse(Mouse mouse) {
     float xoffset = mouse.getDx() * sensitivity;
@@ -58,7 +73,4 @@ glm::mat4 Camera::getView() {
 }
 void Camera::setSensitivity(float sens) {
     sensitivity = sens;
-}
-void Camera::setSpeed(float _speed) {
-    speed = _speed;
 }

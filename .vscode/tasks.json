@@ -10,6 +10,7 @@
     		    "-I${workspaceFolder}/include",
                 "-L${workspaceFolder}/lib",				
                 "${workspaceFolder}/src/\\*.cpp",
+                "${workspaceFolder}/src/stuff/\\*.cpp",
                 "${workspaceFolder}/src/shapes/\\*.cpp",
                 //"${workspaceFolder}/src/shapes/test/\\*.cpp",						
                 "${workspaceFolder}/include/glad/glad.c",

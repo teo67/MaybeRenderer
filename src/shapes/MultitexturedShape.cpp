@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <glad/glad.h>
-#include "../TextureSet.h"
+#include "../stuff/TextureSet.h"
 MultitextureNode::MultitextureNode(MultitexturedShape& _shape) : shape(_shape) {}
 MultitexturedShape& MultitextureNode::getShape() {
     return shape;

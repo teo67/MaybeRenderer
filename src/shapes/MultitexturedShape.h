@@ -5,7 +5,7 @@
 #include <string>
 #include <glad/glad.h>
 #include <vector>
-#include "../TextureSet.h"
+#include "../stuff/TextureSet.h"
 class MultitexturedShape : public Shape {
     private:
         std::vector<GLuint> textures;

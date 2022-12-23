@@ -65,6 +65,7 @@
         "xtree": "cpp",
         "map": "cpp",
         "deque": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "queue": "cpp"
     }
 }

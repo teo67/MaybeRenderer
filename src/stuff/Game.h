@@ -3,16 +3,16 @@
 #include "BatchManager.h"
 #include "ShapeManager.h"
 #include "TextureManager.h"
-#include "shapes/ColorShape.h"
-#include "shapes/MulticolorShape.h"
-#include "shapes/TexturedShape.h"
-#include "shapes/MultitexturedShape.h"
+#include "../shapes/ColorShape.h"
+#include "../shapes/MulticolorShape.h"
+#include "../shapes/TexturedShape.h"
+#include "../shapes/MultitexturedShape.h"
 #include "Mouse.h"
 #include "Camera.h"
 #include <map>
 #include <string>
 #include <GLFW/glfw3.h>
-#include <glad/glad.h>
+
 class Game {
     private:
         BatchManager batman;
@@ -43,8 +43,8 @@ class Game {
         void close();
         bool closed();
         void resizeWindow(unsigned int width, unsigned int height);
-        void respondToMouse();
-        void respondToScroll(double x, double y);
+        virtual void respondToMouse();
+        virtual void respondToScroll(double x, double y);
         void setFOV(float fov);
 };
 #endif

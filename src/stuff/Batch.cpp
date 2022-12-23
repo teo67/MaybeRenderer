@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "shapes/Shape.h"
+#include "../shapes/Shape.h"
 #include "Batch.h"
 #include "Debugger.h"
 #include "TextureSet.h"

@@ -4,9 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
-#include "../BatchInfo.h"
+#include "../stuff/BatchInfo.h"
 #include <memory>
-#include "../TextureSet.h"
+#include "../stuff/TextureSet.h"
 enum class ShapeState : unsigned char {
     ENABLED, DISABLED_TEMPORARY, DISABLED_PERMANENT, DISABLED_RESET
 };

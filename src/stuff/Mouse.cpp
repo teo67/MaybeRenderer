@@ -20,7 +20,6 @@ double Mouse::getDy() {
     return dy;
 }
 void Mouse::handleInput(double xpos, double ypos) {
-    //std::cout << dx << " " << dy << std::endl;
     if (firstMouse) {
         x = xpos;
         y = ypos;
