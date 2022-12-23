@@ -31,6 +31,13 @@ void MulticolorShape::setColor(unsigned int vertex, float r, float g, float b) {
     colors[vertex].g = g;
 }
 
+void MulticolorShape::setColor(unsigned int vertex, Color& color) {
+    if(vertex >= getNumVertices()) {
+        throw "Vertex value is too large!";
+    }
+    colors[vertex] = color;
+}
+
 Color& MulticolorShape::getColor(unsigned int vertex) {
     if(vertex >= getNumVertices()) {
         throw "Vertex value is too large!";

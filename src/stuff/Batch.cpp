@@ -59,6 +59,7 @@ void Batch::init(std::vector<unsigned int> sizes, unsigned int vertexSize, unsig
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
     glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     //Debugger::print("initializing all nullptrs");
     firstShape = nullptr;
     lastShape = nullptr;
@@ -71,18 +72,19 @@ void Batch::init(std::vector<unsigned int> sizes, bool isStatic) {
 }
 void Batch::editVertexBuffer(unsigned int offset, std::vector<float>& vertices, unsigned int sizeo) {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //std::cout << "VERTICES" << std::endl;
+    //std::cout << vertices.size() << " VERTICES" << std::endl;
     //printVector<float>(vertices);
     glBufferSubData(GL_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&vertices[0]));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 void Batch::editIndexBuffer(unsigned int offset, std::vector<unsigned int>& indices, unsigned int sizeo) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //std::cout << "INDICES" << std::endl;
+    //std::cout << indices.size() << " INDICES" << std::endl;
     //printVector<unsigned int>(indices);
     //std::cout << "INDEX OFFSET: " << offset << std::endl;
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, sizeo, static_cast<void *>(&indices[0]));
     //glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, )
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 void Batch::draw() {
     //std::cout << glGetString(GL_VERSION) << std::endl;
@@ -108,6 +110,7 @@ void Batch::draw() {
     } else {
         glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, (void*)0);
     }
+    glBindVertexArray(0);
 }
 void Batch::end() {
     glDeleteVertexArrays(1, &VAO);
@@ -122,10 +125,12 @@ void Batch::end() {
 template <typename T>
 void Batch::printVector(std::vector<T>& input) {
     for(int i = 0; i < input.size(); i++) {
-        std::cout << input[i] << std::endl;
+        std::cout << input[i] << " ";
     }
+    std::cout << std::endl;
 }
 void Batch::addShapeToQueue(const std::shared_ptr<Node1>& newNode) {
+    //std::cout << newNode->getShape().getNumVertices() << std::endl;
     //Debugger::print("made shared");
     if(firstShapeTBA == nullptr) {
         //Debugger::print("Assign 1");
@@ -182,7 +187,7 @@ void Batch::update() {
             lastShape->next = firstPopped;
         }
         lastShape = last;
-        //Debugger::print("popped " + std::to_string(poppedCount) + " shape(s)");
+        //std::cout << "popped " + std::to_string(poppedCount) + " shape(s)" << std::endl;
     } // copy from queue to start of shape linked list
     //Debugger::print("made it past popping");
     if(marked || totalPoppedVertices > 0 || !isStatic) {
@@ -232,6 +237,7 @@ void Batch::update() {
         //std::cout << "first Index: " << firstIndex << ", iIndex: " << iIndex << std::endl;
         //printVector<unsigned int>(newIndexData);
         if(firstIndex != -1) {
+            //std::cout << "AAA" << iIndex - firstIndex << std::endl;
             editIndexBuffer(firstIndex * sizeof(unsigned int), newIndexData, (iIndex - firstIndex) * sizeof(unsigned int));
         }
         numVertices = iVertex;

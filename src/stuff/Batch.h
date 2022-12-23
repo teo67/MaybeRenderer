@@ -5,8 +5,8 @@
 #include <glad/glad.h>
 #include <memory>
 #include <vector>
-inline const unsigned int defaultVertexSize = 1000;
-inline const unsigned int defaultIndexSize = 1000;
+inline const unsigned int defaultVertexSize = 100000;
+inline const unsigned int defaultIndexSize = 100000;
 inline const unsigned int defaultMaxNewShapesPerFrame = 0; // 0 = no max
 
 class Batch {

@@ -10,127 +10,104 @@
 #include <iostream>
 #include <queue>
 #include <math.h>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-const float CUBE_UNIT = sqrtf(2.0f) / 2.0f; // width of a unit cube
-const float LOOK_SPEED = 0.03f;
-const float BLOCK_SIZE = 1.0f;
-const unsigned int BOARD_SIZE = 10;
-const float RADIUS = BLOCK_SIZE * BOARD_SIZE * CUBE_UNIT * 1.5f; // add some extra space
-
-class MyGame : public Game {
-    public:
-        void respondToMouse() {
-            float y = camera.position.y + mouse.getDy() * LOOK_SPEED;
-            camera.position.y = y;
-        }
-        MyGame(unsigned int width, unsigned int height) : Game(width, height) {}
+struct ColorSide {
+    Color color;
+    unsigned int face;
+    ColorSide(Color _color, unsigned int _face) {
+        color = _color;
+        face = _face;
+    }
 };
 
-ColorShape* generateSnakePiece(MyGame& game, float x, float y, float z) {
-    ColorShape& sha = game.generateColorShape(game.shaman.prism(4, false), false);
-    sha.setColor(0.0f, 1.0f, 0.0f);
-    sha.setPosition(x, y, z);
-    sha.setScale(0.0f, 0.0f, 0.0f);
-    return &sha;
+const ColorSide TOP(Color(1.0f, 0.0f, 0.0f), 1); // red
+const ColorSide BOTTOM(Color(1.0f, 0.647f, 0.0f), 0); // orange
+const ColorSide BACK(Color(1.0f, 1.0f, 0.0f), 3); // yellow
+const ColorSide LEFT(Color(0.0f, 1.0f, 0.0f), 4); // green
+const ColorSide RIGHT(Color(0.0f, 0.0f, 1.0f), 2); // blue
+const ColorSide FRONT(Color(1.0f, 1.0f, 1.0f), 5); // white
+
+MulticolorShape* createBlankPiece(Game& game, const VertexIndexInfo& viInfo, int x, int y, int z, float scale) {
+    float t = scale * sqrtf(2.0f) / 2.0f;
+    MulticolorShape& r = game.generateMulticolorShape(viInfo, false);
+    r.setScale(scale, scale, scale);
+    r.setPosition(x * t, y * t, z * t);
+    return &r;
 }
 
-struct vec3 {
-    int x;
-    int y; 
-    int z;
-    vec3(int _x, int _y, int _z) : x(_x), y(_y), z(_z) {}
-    glm::vec3 multiply(float w) { // multiply by float
-        return glm::vec3(x * w, y * w, z * w);
+void editFaceColor(MulticolorShape* shape, ColorSide color, const VertexIndexInfo& viInfo) {
+    for(int i = 0; i < viInfo.faceNumbers.size(); i++) {
+        if(viInfo.faceNumbers[i] == color.face) {
+            shape->setColor(i, color.color);
+        }
     }
-    glm::vec3 add(float w) {
-        return glm::vec3(x + w, y + w, z + w);
+}
+
+MulticolorShape* createPieceWithEdits(Game& game, const VertexIndexInfo& viInfo, int x, int y, int z, float scale, std::vector<ColorSide> colors) {
+    MulticolorShape* res = createBlankPiece(game, viInfo, x, y, z, scale);
+    for(int i = 0; i < colors.size(); i++) {
+        editFaceColor(res, colors[i], viInfo);
     }
-    vec3 add(vec3& w) {
-        return vec3(x + w.x, y + w.y, z + w.z);
-    }
-    vec3 multiply(vec3& w) {
-        return vec3(x * w.x, y * w.y, z * w.z);
-    }
-    glm::vec3 add(const glm::vec3& w) {
-        return glm::vec3(x + w.x, y + w.y, z + w.z);
-    }
-};
+    return res;
+}
 
 int main() {
-    MyGame game(1600, 1200);
-    std::queue<ColorShape*> queue;
-    float resizeSpeed = 1.0f;
-    float cameraSpeed = 10.0f;
-    vec3 movement = vec3(1, 0, 0);
-    glm::vec3 unit(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-    
-    unsigned int initialSize = 4;
-    for(int i = 0; i < initialSize; i++) {
-        ColorShape* res = generateSnakePiece(game, i * CUBE_UNIT * BLOCK_SIZE, 0, 0);
-        res->setScale(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-        queue.push(res);
+    Game game(1600, 1200);
+    const unsigned int size = 5;
+    const float blockSize = 1.0f;
+    const float moveSpeed = 2.0f;
+    if(size < 2) {
+        std::cout << "Size must be 2 or greater!" << std::endl;
+        return -1;
     }
-    
+    MulticolorShape* pieces[size][size][size]; // highest order: X (columns), middle: Y (rows), lowest: Z (slices)
+    const VertexIndexInfo& info = game.shaman.prism(4, true);
 
-    glm::vec3 backpos(3 * BLOCK_SIZE * CUBE_UNIT, 0, 0);
-    glm::vec3 frontpos(0, 0, 0);
-
-    ColorShape& ref = game.generateColorShape(game.shaman.prism(4, false), true);
-    ref.setPosition(-5.0f, 0.0f, 0.0f);
-    ref.setColor(1.0f, 0.0f, 0.0f);
-
-    float currentSize = 0.0f;
-    
-    while(!game.closed()) {
-        float time = game.time() * cameraSpeed;
-        game.camera.position.x = RADIUS * cosf(glm::radians(time));
-        game.camera.position.z = RADIUS * sinf(glm::radians(time));
-        game.camera.setYaw(180.0f + time);
-        float dt = game.dt();
-        game.render();
-        ColorShape* back = queue.back();
-            ColorShape* front = queue.front();
-        if(currentSize >= 1.0f) {
-            if (game.isKeyPressed(GLFW_KEY_W))
-                movement = vec3(0, 1, 0);
-            if (game.isKeyPressed(GLFW_KEY_S))
-                movement = vec3(0, -1, 0);
-            if (game.isKeyPressed(GLFW_KEY_A))
-                movement = vec3(-1, 0, 0);
-            if (game.isKeyPressed(GLFW_KEY_D))
-                movement = vec3(1, 0, 0);
-            if (game.isKeyPressed(GLFW_KEY_Q)) {
-                movement = vec3(0, 0, -1);
+    for(int x = 0; x < size; x++) {
+        for(int y = 0; y < size; y++) {
+            for(int z = 0; z < size; z++) {
+                std::vector<ColorSide> sides;
+                if(x == 0) {
+                    sides.push_back(LEFT);
+                } else if(x == size - 1) {
+                    sides.push_back(RIGHT);
+                }
+                if(y == 0) {
+                    sides.push_back(BOTTOM);
+                } else if(y == size - 1) {
+                    sides.push_back(TOP);
+                }
+                if(z == 0) {
+                    sides.push_back(BACK);
+                } else if(z == size - 1) {
+                    sides.push_back(FRONT);
+                }
+                pieces[x][y][z] = createPieceWithEdits(game, info, x, y, z, blockSize, sides);
             }
-            if(game.isKeyPressed(GLFW_KEY_E)) {
-                movement = vec3(0, 0, 1);
-            }
-
-            back->setScale(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            back->setPosition(backpos.x, backpos.y, backpos.z);
-            front->disable(true);
-
-            queue.pop();
-            frontpos = glm::vec3(queue.front()->transform.x, queue.front()->transform.y, queue.front()->transform.z);
-            backpos += movement.multiply(BLOCK_SIZE * CUBE_UNIT);
-            queue.push(generateSnakePiece(game, backpos.x, backpos.y, backpos.z));
-            currentSize = 0.0f;
-        } else {
-            glm::vec3 m1 = unit - movement.multiply(BLOCK_SIZE * (1.0f - currentSize));
-            glm::vec3 m2 = unit - movement.multiply(BLOCK_SIZE * currentSize);
-            back->setScale(m1.x, m1.y, m1.z);
-            front->setScale(m2.x, m2.y, m2.z);
-            glm::vec3 nback = backpos + (movement.multiply(0.5f * (currentSize - 1.0f))) * BLOCK_SIZE * CUBE_UNIT;
-            glm::vec3 nfront = frontpos + (movement.multiply(0.5f * currentSize)) * BLOCK_SIZE * CUBE_UNIT;
-            back->setPosition(nback.x, nback.y, nback.z);
-            front->setPosition(nfront.x, nfront.y, nfront.z);
-            currentSize += dt * resizeSpeed;
         }
+    }
+
+    while(!game.closed()) {
+        game.render();
         if(game.isKeyPressed(GLFW_KEY_ESCAPE)) {
             game.close();
+        }
+        float dt = game.dt();
+        if(game.isKeyPressed(GLFW_KEY_W)) {
+            game.camera.forward(dt * moveSpeed);
+        }
+        if(game.isKeyPressed(GLFW_KEY_A)) {
+            game.camera.left(dt * moveSpeed);
+        }
+        if(game.isKeyPressed(GLFW_KEY_S)) {
+            game.camera.backward(dt * moveSpeed);
+        }
+        if(game.isKeyPressed(GLFW_KEY_D)) {
+            game.camera.right(dt * moveSpeed);
         }
     }
     return 0;

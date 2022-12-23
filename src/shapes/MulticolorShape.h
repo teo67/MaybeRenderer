@@ -12,6 +12,7 @@ class MulticolorShape : public Shape {
         MulticolorShape(const VertexIndexInfo& _vertexIndexInfo, bool _isStatic);
         void appendVertexData(std::vector<float>& vertexData, unsigned int index, TextureSet& textureSet, unsigned int firstIndex);
         void setColor(unsigned int vertexNumber, float r, float g, float b);
+        void setColor(unsigned int vertexNumber, Color& color);
         Color& getColor(unsigned int vertexNumber);
 };
 class MulticolorNode : public Node1 {
